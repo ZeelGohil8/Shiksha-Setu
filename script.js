@@ -243,7 +243,6 @@
     attendance: ["Attendance", "Record and review student attendance"],
     meals: ["Midday Meals", "Maintain daily meal records"],
     reports: ["My Reports", "Prepare school administration reports"],
-    academics: ["Academic Reports", "Enter marks, grades and student rankings"],
     assistant: ["Smart Assistant", "Draft administrative content for review"],
     chat: ["Teacher Chat", "Share updates with your teaching team"],
     profile: ["My Profile", "View your teacher information"]
@@ -321,10 +320,6 @@
               <span>▤</span><strong>Generate Report</strong>
               <small>Prepare a report</small>
             </button>
-            <button class="action-card" data-go="academics">
-              <span>🎓</span><strong>Academic Reports</strong>
-              <small>Enter and review marks</small>
-            </button>
           </div>
         </article>
 
@@ -378,28 +373,28 @@
         <div class="panel-header">
           <div>
           <h3>Student Records</h3>
-<p class="muted">${students.length} students in your records</p>
+          <p class="muted">${students.length} students in your records</p>
           </div>
           <button class="btn btn-secondary" data-export="students">Export Student List</button>
         </div>
         <div class="table-wrap">
           <table>
-          <thead>
-    <tr>
-        <th>Roll No.</th>
-        <th>Student Name</th>
-        <th>Parent's Contact</th>
-    </tr>
-</thead>
-<tbody>
-    ${students.map((s, index) => `
-        <tr>
-            <td>${index + 1}</td>
-            <td>${escapeHTML(s.name)}</td>
-            <td>${escapeHTML(s.parentContact || "Not provided")}</td>
-        </tr>
-    `).join("")}
-</tbody>
+            <thead>
+              <tr>
+                <th>Roll No.</th>
+                <th>Student Name</th>
+                <th>Parent's Contact</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${students.map((s, index) => `
+                <tr>
+                  <td>${index + 1}</td>
+                  <td>${escapeHTML(s.name)}</td>
+                  <td>${escapeHTML(s.parentContact || "Not provided")}</td>
+                </tr>
+              `).join("")}
+            </tbody>
           </table>
         </div>
         <p class="muted">Sample student records for demonstration only.</p>
@@ -407,75 +402,140 @@
   }
 
   // ---------- ATTENDANCE ----------
+  // Checkbox-based layout preserved from the supplied attendance screen.
+  // Checked = Present; unchecked = Absent. Changes are saved to state.attendance,
+  // which is also the single source used by Weekly/Monthly/Yearly reports.
 
   function renderAttendance() {
     const students = classStudents();
     const records = state.attendance[today()] || {};
-    const present = students.filter(s => records[s.id] === "Present").length;
-    const absent = students.filter(s => records[s.id] === "Absent").length;
+    const present = students.filter(student => records[student.id] === "Present").length;
+    const absent = students.filter(student => records[student.id] === "Absent").length;
 
     return `
-      <section class="stats-grid">
-        <article class="stat-card"><span class="stat-label">Present</span><h2>${present}</h2></article>
-        <article class="stat-card"><span class="stat-label">Absent</span><h2>${absent}</h2></article>
-        <article class="stat-card"><span class="stat-label">Not Marked</span><h2>${students.length - present - absent}</h2></article>
-      </section>
-
-      <section class="panel">
-        <div class="panel-header">
-          <div><h3>Daily Attendance</h3><p class="muted">${today()}</p></div>
-          <button class="btn btn-secondary" data-export="attendance">Export</button>
+      <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+        <div class="card">
+          <p>Present</p>
+          <h2 id="attendancePresentCount" style="color:#52734b">${present}</h2>
         </div>
+        <div class="card">
+          <p>Absent</p>
+          <h2 id="attendanceAbsentCount" style="color:#a53535">${absent}</h2>
+        </div>
+        <div class="card">
+          <p>Total Students</p>
+          <h2 id="attendanceTotalCount">${students.length}</h2>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="section-title">
+          <div>
+            <h2>Daily Attendance</h2>
+            <p>${today()}</p>
+          </div>
+          <button class="btn" id="exportAttendanceCSV" data-export="attendance" type="button">
+            Export
+          </button>
+        </div>
+
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Student ID</th><th>Student Name</th><th>Status</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Roll No.</th>
+                <th>Student Name</th>
+                <th>Attendance</th>
+              </tr>
+            </thead>
             <tbody>
-              ${students.map(student => `
-                <tr>
-                  <td>${escapeHTML(student.id)}</td>
-                  <td>${escapeHTML(student.name)}</td>
-                  <td>
-                    <select class="attendance-select" data-student="${student.id}"
-                      aria-label="Attendance for ${escapeHTML(student.name)}">
-                      <option value="" ${!records[student.id] ? "selected" : ""}>Select status</option>
-                      <option value="Present" ${records[student.id] === "Present" ? "selected" : ""}>Present</option>
-                      <option value="Absent" ${records[student.id] === "Absent" ? "selected" : ""}>Absent</option>
-                    </select>
-                  </td>
-                </tr>
-              `).join("")}
+              ${students.map((student, index) => {
+                const isPresent = records[student.id] === "Present";
+                return `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td>${escapeHTML(student.name)}</td>
+                    <td>
+                      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                        <input
+                          type="checkbox"
+                          class="attendance-checkbox"
+                          data-student="${escapeHTML(student.id)}"
+                          ${isPresent ? "checked" : ""}
+                          aria-label="Mark ${escapeHTML(student.name)} present"
+                          style="width:19px;height:19px;accent-color:#52734b;"
+                        >
+                        <span id="attendanceLabel-${escapeHTML(student.id)}" style="color:${isPresent ? "#52734b" : "#a53535"}">
+                          ${isPresent ? "Present" : "Absent"}
+                        </span>
+                      </label>
+                    </td>
+                  </tr>`;
+              }).join("")}
             </tbody>
           </table>
         </div>
-        <div class="panel-actions">
-          <button class="btn btn-primary" id="saveAttendance">Save Attendance</button>
-          <button class="btn btn-secondary" id="markAllPresent">Mark All Present</button>
-        </div>
-      </section>`;
+      </div>
+    `;
   }
 
   function saveAttendance() {
     const records = { ...(state.attendance[today()] || {}) };
 
-    $$(".attendance-select").forEach(select => {
-      if (select.value) records[select.dataset.student] = select.value;
-      else delete records[select.dataset.student];
+    $$(".attendance-checkbox").forEach(checkbox => {
+      records[checkbox.dataset.student] = checkbox.checked ? "Present" : "Absent";
     });
 
     state.attendance[today()] = records;
     saveData();
-    navigate("attendance");
-    showToast("Attendance saved.");
   }
 
   function markAllPresent() {
-    state.attendance[today()] = {};
+    const records = { ...(state.attendance[today()] || {}) };
     classStudents().forEach(student => {
-      state.attendance[today()][student.id] = "Present";
+      records[student.id] = "Present";
     });
+    state.attendance[today()] = records;
     saveData();
     navigate("attendance");
-    showToast("All students marked present. Verify before submitting.");
+    showToast("All students marked present. Verify the attendance.");
+  }
+    function handleAttendanceCheckboxChange(changedCheckbox) {
+    const dateKey = today();
+    const records = { ...(state.attendance[dateKey] || {}) };
+
+    // This checkbox-style attendance format represents every unchecked box as Absent.
+    // When the teacher changes a checkbox, save the visible class state together.
+    $$(".attendance-checkbox").forEach(checkbox => {
+      records[checkbox.dataset.student] = checkbox.checked ? "Present" : "Absent";
+    });
+
+    state.attendance[dateKey] = records;
+    saveData();
+
+    const students = classStudents();
+    const present = students.filter(student => records[student.id] === "Present").length;
+    const absent = students.filter(student => records[student.id] === "Absent").length;
+
+    const presentCount = $("#attendancePresentCount");
+    const absentCount = $("#attendanceAbsentCount");
+    const totalCount = $("#attendanceTotalCount");
+
+    if (presentCount) presentCount.textContent = present;
+    if (absentCount) absentCount.textContent = absent;
+    if (totalCount) totalCount.textContent = students.length;
+
+    $$(".attendance-checkbox").forEach(checkbox => {
+      const label = $("#attendanceLabel-" + CSS.escape(checkbox.dataset.student));
+      if (label) {
+        label.textContent = checkbox.checked ? "Present" : "Absent";
+        label.style.color = checkbox.checked ? "#52734b" : "#a53535";
+      }
+      checkbox.setAttribute(
+        "aria-label",
+        `Mark ${checkbox.closest("tr")?.querySelector("td:nth-child(2)")?.textContent.trim() || "student"} present`
+      );
+    });
   }
 
   // ---------- MIDDAY MEALS ----------
@@ -553,145 +613,379 @@
     showToast("Meal record saved.");
   }
 
-  // ---------- REPORTS ----------
+  // ---------- REPORTS: WEEKLY, MONTHLY, YEARLY ----------
 
   function renderReports() {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const academicStartYear = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+    const yearOptions = Array.from({ length: 9 }, (_, index) => academicStartYear - 5 + index)
+      .map(year => `<option value="${year}" ${year === academicStartYear ? "selected" : ""}>${year}–${year + 1}</option>`)
+      .join("");
+
     return `
-      <section class="panel">
-        <h3>Generate School Report</h3>
-        <p class="muted">Choose a report to preview and export.</p>
-        <div class="form-grid">
-          <label>Report Type
-            <select id="reportType">
-            <option value="academic">Academic Report</option>
-              <option value="attendance">Attendance Report</option>
-              <option value="meals">Midday Meal Report</option>
-              <option value="tasks">Task Summary</option>
-            </select>
+      <section class="panel attendance-report-panel">
+        <h3>Generate Attendance Report</h3>
+        <p class="muted">Choose a report period to view saved student attendance and calculate each student's percentage.</p>
+
+        <div class="report-type-filter">
+          <label for="reportType">Report Type</label>
+          <select id="reportType">
+            <option value="weekly">Weekly Attendance</option>
+            <option value="monthly" selected>Monthly Attendance</option>
+            <option value="yearly">Yearly Attendance (June–May)</option>
+          </select>
+        </div>
+
+        <div id="weeklyReportFields" class="form-grid report-date-fields hidden">
+          <label for="reportStartDate">Start Date
+            <input type="date" id="reportStartDate" value="${today()}" required>
           </label>
-          <label>Date<input type="date" id="reportDate" value="${today()}"></label>
+          <label for="reportEndDate">End Date
+            <input type="date" id="reportEndDate" value="${today()}" required>
+          </label>
         </div>
+
+        <div id="monthlyReportFields" class="form-grid report-date-fields report-filter-single">
+          <label for="reportMonth">Select Month
+            <input type="month" id="reportMonth" value="${currentMonth}" required>
+          </label>
+        </div>
+
+        <div id="yearlyReportFields" class="form-grid report-date-fields report-filter-single hidden">
+          <label for="reportYear">Select Academic Year (June–May)
+            <select id="reportYear">${yearOptions}</select>
+          </label>
+        </div>
+
         <div class="panel-actions">
-          <button class="btn btn-primary" id="previewReport">Preview Report</button>
-          <button class="btn btn-secondary" id="exportReport">Download</button>
+          <button type="button" class="btn btn-primary" id="previewReport">Preview Report</button>
+          <button type="button" class="btn btn-secondary" id="exportReport">Download</button>
         </div>
-        <div id="reportPreview" class="report-preview">
-          <p class="empty-state">Choose a report and select Preview Report.</p>
+
+        <div id="reportPreview" lass="report-preview">
+          <p class="empty-state">Select a period and click Preview Report.</p>
         </div>
       </section>`;
   }
 
-  function getReportRows(type, date) {
-    if (type === "attendance") {
-      const records = state.attendance[date] || {};
-      return [
-        ["Date", "Student ID", "Student Name", "Class", "Status"],
-        ...classStudents().map(s => [date, s.id, s.name, s.className, records[s.id] || "Not Marked"])
-      ];
-    }
+  function updateReportFields() {
+    const type = $("#reportType")?.value || "monthly";
+    $("#weeklyReportFields")?.classList.toggle("hidden", type !== "weekly");
+    $("#monthlyReportFields")?.classList.toggle("hidden", type !== "monthly");
+    $("#yearlyReportFields")?.classList.toggle("hidden", type !== "yearly");
+  }
 
-    if (type === "meals") {
-      const meal = state.meals[date];
-      return [
-        ["Date", "Menu", "Students Served", "Status", "Notes"],
-        ...(meal ? [[date, meal.menu, meal.served, meal.status, meal.notes]] : [])
-      ];
-    }
-
+  function reportDateKey(date) {
     return [
-      ["Task", "Due", "Status"],
-      ...state.tasks.map(task => [task.title, task.due, task.done ? "Completed" : "Pending"])
-    ];
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0")
+    ].join("-");
+  }
+
+  function reportDateFromKey(key) {
+    return new Date(`${key}T12:00:00`);
+  }
+
+  function getAttendanceCode(dateKey, studentId) {
+    const records = state.attendance[dateKey] || {};
+    if (records[studentId] === "Present") return "P";
+    if (records[studentId] === "Absent") return "A";
+    return "";
+  }
+
+  function getReportOptionsFromUI() {
+    const type = $("#reportType")?.value || "monthly";
+
+    if (type === "weekly") {
+      return {
+        type,
+        startDate: $("#reportStartDate")?.value || "",
+        endDate: $("#reportEndDate")?.value || ""
+      };
+    }
+
+    if (type === "monthly") {
+      return { type, month: $("#reportMonth")?.value || "" };
+    }
+
+    return { type, year: $("#reportYear")?.value || "" };
+  }
+
+  function getReportPeriod(options) {
+    let startDate;
+    let endDate;
+    let title;
+    let periodText;
+
+    if (options.type === "weekly") {
+      startDate = options.startDate;
+      endDate = options.endDate;
+      if (!startDate || !endDate || startDate > endDate) return null;
+      title = "Weekly Attendance Report";
+      periodText = `${startDate} to ${endDate}`;
+    } else if (options.type === "monthly") {
+      if (!/^\d{4}-\d{2}$/.test(options.month || "")) return null;
+      const [yearText, monthText] = options.month.split("-");
+      const year = Number(yearText);
+      const monthIndex = Number(monthText) - 1;
+      if (monthIndex < 0 || monthIndex > 11) return null;
+      startDate = reportDateKey(new Date(year, monthIndex, 1, 12));
+      endDate = reportDateKey(new Date(year, monthIndex + 1, 0, 12));
+      title = "Monthly Attendance Report";
+      periodText = new Date(year, monthIndex, 1, 12).toLocaleDateString("en-IN", {
+        month: "long", year: "numeric"
+      });
+    } else if (options.type === "yearly") {
+      const academicYear = Number(options.year);
+      if (!Number.isInteger(academicYear) || academicYear < 1900 || academicYear > 2200) return null;
+      // Match the supplied yearly format: June through the following May.
+      startDate = reportDateKey(new Date(academicYear, 5, 1, 12));
+      endDate = reportDateKey(new Date(academicYear + 1, 4, 31, 12));
+      title = "Yearly Attendance Report";
+      periodText = `June ${academicYear} – May ${academicYear + 1}`;
+    } else {
+      return null;
+    }
+
+    const first = reportDateFromKey(startDate);
+    const last = reportDateFromKey(endDate);
+    if (Number.isNaN(first.getTime()) || Number.isNaN(last.getTime()) || first > last) return null;
+
+    const dateKeys = [];
+    const cursor = new Date(first);
+    while (cursor <= last) {
+      dateKeys.push(reportDateKey(cursor));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return { startDate, endDate, dateKeys, title, periodText };
+  }
+
+  function getReportRows(type, selection) {
+    const options = { ...selection, type };
+    const period = getReportPeriod(options);
+    if (!period) return null;
+
+    const students = classStudents();
+    const dateKeys = period.dateKeys;
+    const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const attendanceCode = (dateKey, student) => getAttendanceCode(dateKey, student.id);
+
+    // A date is counted as a working/recorded day only when at least one
+    // student has an explicitly saved Present or Absent value on that date.
+    const workingDateSet = new Set(dateKeys.filter(dateKey =>
+      students.some(student => attendanceCode(dateKey, student) !== "")
+    ));
+    const totalWorkingDays = workingDateSet.size;
+    const totalSavedMarks = dateKeys.reduce((sum, dateKey) =>
+      sum + students.filter(student => attendanceCode(dateKey, student) !== "").length, 0);
+
+    function studentCounts(student, dates) {
+      let present = 0;
+      let absent = 0;
+      dates.forEach(dateKey => {
+        const code = attendanceCode(dateKey, student);
+        if (code === "P") present++;
+        if (code === "A") absent++;
+      });
+      const markedDays = present + absent;
+      const percentage = markedDays ? (present / markedDays * 100) : null;
+      return { present, absent, markedDays, percentage };
+    }
+
+    let rows;
+    let summaryRowIndex = null;
+
+    if (type === "weekly" || type === "monthly") {
+      const dateHeaders = dateKeys.map(dateKey => {
+        const date = reportDateFromKey(dateKey);
+        return type === "weekly"
+          ? `${weekdayNames[date.getDay()]}\n${date.getDate()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+          : `${date.getDate()}\n${weekdayNames[date.getDay()]}`;
+      });
+
+      const headers = [
+        "Roll No.", "Student Name", ...dateHeaders,
+        "Present Days", "Absent Days", "Total Working Days", "Days Marked", "Attendance %"
+      ];
+
+      rows = [headers, ...students.map((student, index) => {
+        const counts = studentCounts(student, dateKeys);
+        return [
+          index + 1,
+          student.name,
+          ...dateKeys.map(dateKey => attendanceCode(dateKey, student)),
+          counts.present,
+          counts.absent,
+          totalWorkingDays,
+          counts.markedDays,
+          counts.percentage === null ? "—" : `${counts.percentage.toFixed(2)}%`
+        ];
+      })];
+    } else {
+      const monthPeriods = Array.from({ length: 12 }, (_, index) => {
+        const monthIndex = (5 + index) % 12;
+        const monthYear = Number(options.year) + (monthIndex < 5 ? 1 : 0);
+        const lastDay = new Date(monthYear, monthIndex + 1, 0).getDate();
+        const dates = Array.from({ length: lastDay }, (_, dayIndex) =>
+          reportDateKey(new Date(monthYear, monthIndex, dayIndex + 1, 12))
+        );
+        return {
+          year: monthYear,
+          month: monthIndex,
+          label: new Date(monthYear, monthIndex, 1, 12).toLocaleDateString("en-IN", { month: "short" }),
+          dates,
+          workingDays: dates.filter(dateKey => workingDateSet.has(dateKey)).length
+        };
+      });
+
+      const headers = [
+        "Roll No.", "Student Name", ...monthPeriods.map(month => month.label),
+        "Total Days Present", "Total Working Days", "Days Marked", "Attendance %"
+      ];
+
+      const summaryRow = [
+        "", "Total monthly working days",
+        ...monthPeriods.map(month => month.workingDays),
+        "", totalWorkingDays, "", ""
+      ];
+      summaryRowIndex = 1;
+
+      rows = [headers, summaryRow, ...students.map((student, index) => {
+        const counts = studentCounts(student, dateKeys);
+        const monthlyPresent = monthPeriods.map(month =>
+          studentCounts(student, month.dates).present
+        );
+        return [
+          index + 1,
+          student.name,
+          ...monthlyPresent,
+          counts.present,
+          totalWorkingDays,
+          counts.markedDays,
+          counts.percentage === null ? "—" : `${counts.percentage.toFixed(2)}%`
+        ];
+      })];
+    }
+
+    rows.reportMeta = {
+      title: period.title,
+      periodText: period.periodText,
+      studentCount: students.length,
+      totalWorkingDays,
+      totalSavedMarks,
+      summaryRowIndex,
+      type
+    };
+    return rows;
   }
 
   function previewReport() {
-    const rows = getReportRows($("#reportType").value, $("#reportDate").value);
     const preview = $("#reportPreview");
+    const options = getReportOptionsFromUI();
+    if (!preview) return;
 
-    if (rows.length === 1) {
-      preview.innerHTML = `<p class="empty-state">No records found for this report.</p>`;
+    const rows = getReportRows(options.type, options);
+    if (!rows) {
+      preview.innerHTML = `<p class="empty-state">Please select a valid date range, month or academic year.</p>`;
+      return;
+    }
+
+    const meta = rows.reportMeta;
+    if (meta.totalSavedMarks === 0) {
+      preview.innerHTML = `
+        <h3>${escapeHTML(meta.title)}</h3>
+        <p class="muted">${escapeHTML(meta.periodText)}</p>
+        <p class="empty-state">No attendance has been saved for this period. Go to Attendance, mark Present/Absent, press Save Attendance, and then preview this report again.</p>`;
       return;
     }
 
     preview.innerHTML = `
-      <h3>Report Preview</h3>
-      <div class="table-wrap"><table>
-        <thead><tr>${rows[0].map(cell => `<th>${escapeHTML(cell)}</th>`).join("")}</tr></thead>
-        <tbody>${rows.slice(1).map(row => `<tr>${row.map(cell => `<td>${escapeHTML(cell)}</td>`).join("")}</tr>`).join("")}</tbody>
-      </table></div>
-      <p class="muted">Review the information before sharing or submitting it.</p>`;
+      <h3>${escapeHTML(meta.title)}</h3>
+      <p class="muted">${escapeHTML(meta.periodText)}</p>
+      <p class="muted">P = Present · A = Absent · Blank = attendance not marked</p>
+      <div class="table-wrap attendance-report-wrap">
+        <table class="attendance-report-table ${options.type}-attendance-table">
+          <thead><tr>${rows[0].map(cell => `<th>${escapeHTML(cell)}</th>`).join("")}</tr></thead>
+          <tbody>
+            ${rows.slice(1).map((row, index) => {
+              const isSummary = meta.summaryRowIndex === index + 1;
+              return `<tr class="${isSummary ? "monthly-working-summary" : ""}">${row.map(cell => `<td>${escapeHTML(cell ?? "")}</td>`).join("")}</tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted">Working/recorded days: ${meta.totalWorkingDays}. Attendance percentage is calculated from each student's explicitly marked Present/Absent days, so blank days are not counted as Absent.</p>`;
   }
+    // ---------- SMART ASSISTANT ----------
 
-  // ---------- SMART ASSISTANT ----------
+  function renderAssistant() {
+    return `
+      <section class="panel assistant-panel">
+        <h2>✨ Smart Assistant</h2>
+        <p class="muted">
+          Create school notices, parent messages and other school-related drafts.
+        </p>
 
-  
-function renderAssistant() {
-  return `
-    <section class="panel assistant-panel">
-      <h2>✨ Smart Assistant</h2>
-      <p class="muted">
-        Create school notices, parent messages and other school-related drafts.
-      </p>
+        <form id="assistantForm" class="form-grid">
+          <label>
+            Draft Type
+            <select name="kind">
+              <option value="notice">School Notice</option>
+              <option value="parent">Parent Message</option>
+              <option value="meeting">Meeting Summary</option>
+              <option value="leave">Leave Application</option>
+              <option value="announcement">School Announcement</option>
+            </select>
+          </label>
 
-      <form id="assistantForm" class="form-grid">
+          <label>
+            Language
+            <select name="language">
+              <option value="English">English</option>
+              <option value="Gujarati">Gujarati</option>
+              <option value="Hindi">Hindi</option>
+            </select>
+          </label>
 
-        <label>
-          Draft Type
-          <select name="kind">
-            <option value="notice">School Notice</option>
-            <option value="parent">Parent Message</option>
-            <option value="meeting">Meeting Summary</option>
-            <option value="leave">Leave Application</option>
-            <option value="announcement">School Announcement</option>
-          </select>
-        </label>
+          <label class="full-width">
+            Topic
+            <input
+              name="topic"
+              type="text"
+              required
+              maxlength="200"
+              placeholder="e.g. Parent-teacher meeting"
+            >
+          </label>
 
-        <label>
-          Language
-          <select name="language">
-            <option value="English">English</option>
-            <option value="Gujarati">Gujarati</option>
-            <option value="Hindi">Hindi</option>
-          </select>
-        </label>
+          <label class="full-width">
+            Additional Details
+            <textarea
+              name="details"
+              rows="4"
+              maxlength="2000"
+              placeholder="Enter date, time, class and other important details..."
+            ></textarea>
+          </label>
 
-        <label class="full-width">
-          Topic
-          <input
-            name="topic"
-            type="text"
-            required
-            maxlength="200"
-            placeholder="e.g. Parent-teacher meeting"
-          >
-        </label>
+          <div class="panel-actions full-width">
+            <button type="submit" class="btn btn-primary">
+              ✨ Create Draft
+            </button>
+          </div>
+        </form>
 
-        <label class="full-width">
-          Additional Details
-          <textarea
-            name="details"
-            rows="4"
-            maxlength="2000"
-            placeholder="Enter date, time, class and other important details..."
-          ></textarea>
-        </label>
+        <div id="assistantResult"></div>
 
-        <div class="panel-actions full-width">
-          <button type="submit" class="btn btn-primary">
-            ✨ Create Draft
-          </button>
-        </div>
-
-      </form>
-
-      <div id="assistantResult"></div>
-
-      <p class="muted">
-        Review the draft before sending or publishing it.
-      </p>
-    </section>
-  `;
-}
+        <p class="muted">
+          Review the draft before sending or publishing it.
+        </p>
+      </section>
+    `;
+  }
 
   function makeDraft(kind, topic, details) {
     const extra = details.trim() ? `\n\nAdditional details:\n${details.trim()}` : "";
@@ -711,440 +1005,417 @@ function renderAssistant() {
 
   // ---------- TEACHER CHAT ----------
 
-   
-function renderChat() {
-  return `
-    <section class="panel teacher-chat-panel">
-      <div class="chat-header">
-        <div class="chat-group-avatar">👩‍🏫</div>
-        <div>
-          <h3>Teacher Group Chat</h3>
-          <p class="muted">Share messages, photos and voice notes</p>
-        </div>
-      </div>
-
-      <div id="chatMessages" class="chat-messages">
-        ${renderMessages()}
-      </div>
-
-      <form id="chatForm" class="chat-form">
-        <label for="chatPhotoInput" class="chat-icon-btn"
-               title="Attach a photo" aria-label="Attach a photo">
-          📎
-        </label>
-
-        <input
-          type="file"
-          id="chatPhotoInput"
-          accept="image/*"
-          multiple
-          hidden
-        >
-
-        <input
-          type="text"
-          name="message"
-          id="chatMessageInput"
-          maxlength="500"
-          placeholder="Type a message..."
-          autocomplete="off"
-        >
-
-        <button
-          type="button"
-          id="recordVoiceBtn"
-          class="chat-icon-btn"
-          title="Record voice message"
-          aria-label="Record voice message"
-        >🎙️</button>
-
-        <button type="submit" class="chat-send-btn">
-          ➤
-        </button>
-      </form>
-
-      <div id="voiceRecordingStatus" class="voice-status"
-           aria-live="polite"></div>
-
-      <p class="muted chat-footnote">
-        Demo mode · Messages are stored in this browser only.
-      </p>
-    </section>
-  `;
-}
-
-
- 
-function renderMessages() {
-  if (!state.messages.length) {
-    return `<p class="empty-state">No messages yet. Start a conversation!</p>`;
-  }
-
-  return state.messages.map((message, index) => {
-    const isMine = state.teacher &&
-      message.sender === state.teacher.name;
-
-    let attachment = "";
-
-    if (message.type === "image" && message.dataUrl) {
-      attachment = `
-        <img
-          class="chat-photo"
-          src="${escapeHTML(message.dataUrl)}"
-          alt="Shared photo"
-          loading="lazy"
-        >
-      `;
-    } else if (message.type === "audio" && message.dataUrl) {
-      attachment = `
-        <audio
-          class="chat-audio"
-          controls
-          preload="metadata"
-          src="${escapeHTML(message.dataUrl)}"
-        ></audio>
-      `;
-    }
-
+  function renderChat() {
     return `
-      <article class="chat-message ${isMine ? "my-message" : ""}">
-        <div class="chat-message-heading">
-          <strong>${escapeHTML(message.sender)}</strong>
-          <small>${escapeHTML(message.time)}</small>
+      <section class="panel teacher-chat-panel">
+        <div class="chat-header">
+          <div class="chat-group-avatar">👩‍🏫</div>
+          <div>
+            <h3>Teacher Group Chat</h3>
+            <p class="muted">Share messages, photos and voice notes</p>
+          </div>
         </div>
 
-        ${message.text
-          ? `<p class="chat-message-text">${escapeHTML(message.text)}</p>`
-          : ""}
+        <div id="chatMessages" class="chat-messages">
+          ${renderMessages()}
+        </div>
 
-        ${attachment}
-      </article>
+        <form id="chatForm" class="chat-form">
+          <label for="chatPhotoInput" class="chat-icon-btn"
+                 title="Attach a photo" aria-label="Attach a photo">
+            📎
+          </label>
+
+          <input
+            type="file"
+            id="chatPhotoInput"
+            accept="image/*"
+            multiple
+            hidden
+          >
+
+          <input
+            type="text"
+            name="message"
+            id="chatMessageInput"
+            maxlength="500"
+            placeholder="Type a message..."
+            autocomplete="off"
+          >
+
+          <button
+            type="button"
+            id="recordVoiceBtn"
+            class="chat-icon-btn"
+            title="Record voice message"
+            aria-label="Record voice message"
+          >🎙️</button>
+
+          <button type="submit" class="chat-send-btn">
+            ➤
+          </button>
+        </form>
+
+        <div id="voiceRecordingStatus" class="voice-status"
+             aria-live="polite"></div>
+
+        <p class="muted chat-footnote">
+          Demo mode · Messages are stored in this browser only.
+        </p>
+      </section>
     `;
-  }).join("");
-}
-
-
-// Convert an uploaded file or voice recording into a data URL.
-function fileToDataURL(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Could not read the file."));
-
-    reader.readAsDataURL(file);
-  });
-}
-
-
-// Add a text, photo or voice message.
-async function addChatMessage({ text = "", type = "text", dataUrl = "" }) {
-  if (!state.teacher) return;
-
-  if (!text.trim() && !dataUrl) return;
-
-  state.messages.push({
-    sender: state.teacher.name,
-    text: text.trim(),
-    type,
-    dataUrl,
-    time: new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit"
-    })
-  });
-
-  saveData();
-
-  // Render only the chat, not the entire page.
-  const messages = $("#chatMessages");
-
-  if (messages) {
-    messages.innerHTML = renderMessages();
-    messages.scrollTop = messages.scrollHeight;
-  } else {
-    navigate("chat");
   }
-}
 
-
-// Send a normal text message.
-function sendMessage(form) {
-  const input = $("#chatMessageInput");
-  const text = input?.value.trim() || "";
-
-  if (!text) return;
-
-  addChatMessage({ text });
-
-  input.value = "";
-  input.focus();
-}
-
-
-// Upload and send selected photos.
-async function sendChatPhotos(files) {
-  const maxSize = 2 * 1024 * 1024; // 2 MB per photo
-
-  for (const file of files) {
-    if (!file.type.startsWith("image/")) {
-      showToast("Please select image files only.");
-      continue;
+  function renderMessages() {
+    if (!state.messages.length) {
+      return `<p class="empty-state">No messages yet. Start a conversation!</p>`;
     }
 
-    if (file.size > maxSize) {
-      showToast(`${file.name} is too large. Maximum size is 2 MB.`);
-      continue;
-    }
+    return state.messages.map((message, index) => {
+      const isMine = state.teacher &&
+        message.sender === state.teacher.name;
 
-    try {
-      const dataUrl = await fileToDataURL(file);
+      let attachment = "";
 
-      await addChatMessage({
-        type: "image",
-        dataUrl
-      });
-    } catch (error) {
-      showToast("Could not load this photo.");
-    }
-  }
-}
-
-
-// Voice recording state.
-let chatMediaRecorder = null;
-let chatAudioChunks = [];
-let chatIsRecording = false;
-
-
-// Start or stop recording a voice message.
-async function toggleVoiceRecording() {
-  const button = $("#recordVoiceBtn");
-  const status = $("#voiceRecordingStatus");
-
-  if (!button || !status) return;
-
-  // Clicking again stops the active recording.
-  if (chatIsRecording && chatMediaRecorder) {
-    chatMediaRecorder.stop();
-    return;
-  }
-
-  if (!navigator.mediaDevices?.getUserMedia ||
-      typeof MediaRecorder === "undefined") {
-    showToast("Voice recording is not supported in this browser.");
-    return;
-  }
-
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true
-    });
-
-    chatAudioChunks = [];
-
-    const options = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-      ? { mimeType: "audio/webm;codecs=opus" }
-      : {};
-
-    chatMediaRecorder = new MediaRecorder(stream, options);
-
-    chatMediaRecorder.addEventListener("dataavailable", event => {
-      if (event.data.size > 0) {
-        chatAudioChunks.push(event.data);
-      }
-    });
-
-    chatMediaRecorder.addEventListener("stop", async () => {
-      const recorder = chatMediaRecorder;
-      const mimeType = recorder?.mimeType || "audio/webm";
-
-      stream.getTracks().forEach(track => track.stop());
-
-      chatIsRecording = false;
-      button.textContent = "🎙️";
-      button.classList.remove("recording");
-      status.textContent = "";
-
-      const audioBlob = new Blob(chatAudioChunks, {
-        type: mimeType
-      });
-
-      chatAudioChunks = [];
-      chatMediaRecorder = null;
-
-      if (!audioBlob.size) {
-        showToast("No voice audio was recorded.");
-        return;
+      if (message.type === "image" && message.dataUrl) {
+        attachment = `
+          <img
+            class="chat-photo"
+            src="${escapeHTML(message.dataUrl)}"
+            alt="Shared photo"
+            loading="lazy"
+          >
+        `;
+      } else if (message.type === "audio" && message.dataUrl) {
+        attachment = `
+          <audio
+            class="chat-audio"
+            controls
+            preload="metadata"
+            src="${escapeHTML(message.dataUrl)}"
+          ></audio>
+        `;
       }
 
-      // Keep voice notes reasonably small for this local demo.
-      if (audioBlob.size > 2 * 1024 * 1024) {
-        showToast("Voice note is too large. Please record a shorter one.");
-        return;
+      return `
+        <article class="chat-message ${isMine ? "my-message" : ""}">
+          <div class="chat-message-heading">
+            <strong>${escapeHTML(message.sender)}</strong>
+            <small>${escapeHTML(message.time)}</small>
+          </div>
+
+          ${message.text
+            ? `<p class="chat-message-text">${escapeHTML(message.text)}</p>`
+            : ""}
+
+          ${attachment}
+        </article>
+      `;
+    }).join("");
+  }
+
+  // Convert an uploaded file or voice recording into a data URL.
+  function fileToDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Could not read the file."));
+
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Add a text, photo or voice message.
+  async function addChatMessage({ text = "", type = "text", dataUrl = "" }) {
+    if (!state.teacher) return;
+    if (!text.trim() && !dataUrl) return;
+
+    state.messages.push({
+      sender: state.teacher.name,
+      text: text.trim(),
+      type,
+      dataUrl,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    });
+
+    saveData();
+
+    const messages = $("#chatMessages");
+
+    if (messages) {
+      messages.innerHTML = renderMessages();
+      messages.scrollTop = messages.scrollHeight;
+    } else {
+      navigate("chat");
+    }
+  }
+
+  // Send a normal text message.
+  function sendMessage(form) {
+    const input = $("#chatMessageInput");
+    const text = input?.value.trim() || "";
+
+    if (!text) return;
+
+    addChatMessage({ text });
+
+    input.value = "";
+    input.focus();
+  }
+
+  // Upload and send selected photos.
+  async function sendChatPhotos(files) {
+    const maxSize = 2 * 1024 * 1024; // 2 MB per photo
+
+    for (const file of files) {
+      if (!file.type.startsWith("image/")) {
+        showToast("Please select image files only.");
+        continue;
+      }
+
+      if (file.size > maxSize) {
+        showToast(`${file.name} is too large. Maximum size is 2 MB.`);
+        continue;
       }
 
       try {
-        const dataUrl = await fileToDataURL(audioBlob);
+        const dataUrl = await fileToDataURL(file);
 
         await addChatMessage({
-          type: "audio",
+          type: "image",
           dataUrl
         });
-
-        showToast("Voice message added to chat.");
       } catch (error) {
-        showToast("Could not save the voice message.");
+        showToast("Could not load this photo.");
       }
-    });
-
-    chatMediaRecorder.start();
-    chatIsRecording = true;
-
-    button.textContent = "⏹️";
-    button.classList.add("recording");
-    status.textContent = "Recording... Click ⏹️ to finish and send.";
-
-  } catch (error) {
-    showToast("Microphone access denied or unavailable.");
-  }
-}
-
-
-    
-
-
-  // ---------- PROFILE ----------
-
-  
-     function renderProfile() {
-  const teacher = state.teacher;
-  if (!teacher) return "";
-
-  let savedProfile = {};
-
-  try {
-    savedProfile = JSON.parse(
-      localStorage.getItem("shikshasetu_profile_" + teacher.id) || "{}"
-    );
-  } catch (error) {
-    savedProfile = {};
+    }
   }
 
-  const profile = {
-    ...savedProfile,
-    ...(teacher.profile || {})
-  };
+  // Voice recording state.
+  let chatMediaRecorder = null;
+  let chatAudioChunks = [];
+  let chatIsRecording = false;
 
-  teacher.profile = profile;
+  // Start or stop recording a voice message.
+  async function toggleVoiceRecording() {
+    const button = $("#recordVoiceBtn");
+    const status = $("#voiceRecordingStatus");
 
-  const initials = (teacher.name || "T")
-    .split(" ")
-    .map(word => word[0] || "")
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+    if (!button || !status) return;
 
-  return `
-    <section class="panel profile-card">
-      <div class="profile-top">
+    if (chatIsRecording && chatMediaRecorder) {
+      chatMediaRecorder.stop();
+      return;
+    }
 
-        <div class="profile-avatar-wrap">
-          ${
-            profile.photo
-              ? `<img src="${escapeHTML(profile.photo)}"
-                   class="profile-photo" alt="Teacher profile photo">`
-              : `<div class="profile-avatar">${escapeHTML(initials)}</div>`
-          }
+    if (!navigator.mediaDevices?.getUserMedia ||
+        typeof MediaRecorder === "undefined") {
+      showToast("Voice recording is not supported in this browser.");
+      return;
+    }
 
-         
-<label class="profile-camera-btn" title="Change profile photo">
-    <svg xmlns="http://www.w3.org/2000/svg"
-         width="22" height="22"
-         viewBox="0 0 24 24"
-         fill="none"
-         stroke="currentColor"
-         stroke-width="2"
-         stroke-linecap="round"
-         stroke-linejoin="round"
-         aria-hidden="true">
-        <path d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4l-2-3z"/>
-        <circle cx="12" cy="12" r="3"/>
-    </svg>
-    <input type="file" id="profilePhotoInput"
-           accept="image/*" hidden>
-</label>
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true
+      });
 
+      chatAudioChunks = [];
+
+      const options = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? { mimeType: "audio/webm;codecs=opus" }
+        : {};
+
+      chatMediaRecorder = new MediaRecorder(stream, options);
+
+      chatMediaRecorder.addEventListener("dataavailable", event => {
+        if (event.data.size > 0) {
+          chatAudioChunks.push(event.data);
+        }
+      });
+
+      chatMediaRecorder.addEventListener("stop", async () => {
+        const recorder = chatMediaRecorder;
+        const mimeType = recorder?.mimeType || "audio/webm";
+
+        stream.getTracks().forEach(track => track.stop());
+
+        chatIsRecording = false;
+        button.textContent = "🎙️";
+        button.classList.remove("recording");
+        status.textContent = "";
+
+        const audioBlob = new Blob(chatAudioChunks, {
+          type: mimeType
+        });
+
+        chatAudioChunks = [];
+        chatMediaRecorder = null;
+
+        if (!audioBlob.size) {
+          showToast("No voice audio was recorded.");
+          return;
+        }
+
+        if (audioBlob.size > 2 * 1024 * 1024) {
+          showToast("Voice note is too large. Please record a shorter one.");
+          return;
+        }
+
+        try {
+          const dataUrl = await fileToDataURL(audioBlob);
+
+          await addChatMessage({
+            type: "audio",
+            dataUrl
+          });
+
+          showToast("Voice message added to chat.");
+        } catch (error) {
+          showToast("Could not save the voice message.");
+        }
+      });
+
+      chatMediaRecorder.start();
+      chatIsRecording = true;
+
+      button.textContent = "⏹️";
+      button.classList.add("recording");
+      status.textContent = "Recording... Click ⏹️ to finish and send.";
+
+    } catch (error) {
+      showToast("Microphone access denied or unavailable.");
+    }
+  }
+    // ---------- PROFILE ----------
+
+  function renderProfile() {
+    const teacher = state.teacher;
+    if (!teacher) return "";
+
+    let savedProfile = {};
+
+    try {
+      savedProfile = JSON.parse(
+        localStorage.getItem("shikshasetu_profile_" + teacher.id) || "{}"
+      );
+    } catch (error) {
+      savedProfile = {};
+    }
+
+    const profile = {
+      ...savedProfile,
+      ...(teacher.profile || {})
+    };
+
+    teacher.profile = profile;
+
+    const initials = (teacher.name || "T")
+      .split(" ")
+      .map(word => word[0] || "")
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+    return `
+      <section class="panel profile-card">
+        <div class="profile-top">
+          <div class="profile-avatar-wrap">
+            ${
+              profile.photo
+                ? `<img src="${escapeHTML(profile.photo)}"
+                     class="profile-photo" alt="Teacher profile photo">`
+                : `<div class="profile-avatar">${escapeHTML(initials)}</div>`
+            }
+
+            <label class="profile-camera-btn" title="Change profile photo">
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   width="22" height="22"
+                   viewBox="0 0 24 24"
+                   fill="none"
+                   stroke="currentColor"
+                   stroke-width="2"
+                   stroke-linecap="round"
+                   stroke-linejoin="round"
+                   aria-hidden="true">
+                <path d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-4l-2-3z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <input type="file" id="profilePhotoInput"
+                     accept="image/*" hidden>
+            </label>
+          </div>
+
+          <h2>${escapeHTML(teacher.name || "")}</h2>
+          <p>${escapeHTML(teacher.role || "Teacher")}</p>
+          <small class="muted">Tap the camera icon to change your photo.</small>
         </div>
 
-        <h2>${escapeHTML(teacher.name || "")}</h2>
-        <p>${escapeHTML(teacher.role || "Teacher")}</p>
-        <small class="muted">Tap the camera icon to change your photo.</small>
-      </div>
-
-     
-<div class="profile-details">
-    <div>
-        <span><i class="profile-detail-icon">▣</i> Teacher ID</span>
-        <strong>${escapeHTML(teacher.id || "-")}</strong>
-    </div>
-    <div>
-        <span><i class="profile-detail-icon">◆</i> School</span>
-        <strong>${escapeHTML(teacher.school || "-")}</strong>
-    </div>
-    <div>
-        <span><i class="profile-detail-icon">●</i> Assigned Class</span>
-        <strong>${escapeHTML(teacher.className || "-")}</strong>
-    </div>
-    <div>
-        <span><i class="profile-detail-icon">▣</i> Subject</span>
-        <strong>${escapeHTML(teacher.subject || "-")}</strong>
-    </div>
-</div>
-
-      <form id="profileForm" class="form-grid profile-form">
-        <label>
-          Email ID
-          <input type="email" name="email"
-            value="${escapeHTML(profile.email || "")}"
-            placeholder="teacher@example.com">
-        </label>
-
-        <label>
-          Contact Number
-          <input type="tel" name="contact" maxlength="15"
-            value="${escapeHTML(profile.contact || "")}"
-            placeholder="Enter contact number">
-        </label>
-
-        <label>
-          Qualification
-          <input type="text" name="qualification" maxlength="150"
-            value="${escapeHTML(profile.qualification || "")}"
-            placeholder="e.g. B.Ed., M.A.">
-        </label>
-
-        <label>
-          Teaching Experience
-          <input type="text" name="experience" maxlength="100"
-            value="${escapeHTML(profile.experience || "")}"
-            placeholder="e.g. 5 years">
-        </label>
-
-        <label class="full-width">
-          Additional Role
-          <input type="text" name="additionalRole" maxlength="150"
-            value="${escapeHTML(profile.additionalRole || "")}"
-            placeholder="e.g. Examination Coordinator">
-        </label>
-
-        <div class="panel-actions full-width">
-          <button type="submit" class="btn btn-primary">Save Profile</button>
+        <div class="profile-details">
+          <div>
+            <span><i class="profile-detail-icon">▣</i> Teacher ID</span>
+            <strong>${escapeHTML(teacher.id || "-")}</strong>
+          </div>
+          <div>
+            <span><i class="profile-detail-icon">◆</i> School</span>
+            <strong>${escapeHTML(teacher.school || "-")}</strong>
+          </div>
+          <div>
+            <span><i class="profile-detail-icon">●</i> Assigned Class</span>
+            <strong>${escapeHTML(teacher.className || "-")}</strong>
+          </div>
+          <div>
+            <span><i class="profile-detail-icon">▣</i> Subject</span>
+            <strong>${escapeHTML(teacher.subject || "-")}</strong>
+          </div>
         </div>
-      </form>
-    </section>
-  `;
-}
+
+        <form id="profileForm" class="form-grid profile-form">
+          <label>
+            Email ID
+            <input type="email" name="email"
+              value="${escapeHTML(profile.email || "")}"
+              placeholder="teacher@example.com">
+          </label>
+
+          <label>
+            Contact Number
+            <input type="tel" name="contact" maxlength="15"
+              value="${escapeHTML(profile.contact || "")}"
+              placeholder="Enter contact number">
+          </label>
+
+          <label>
+            Qualification
+            <input type="text" name="qualification" maxlength="150"
+              value="${escapeHTML(profile.qualification || "")}"
+              placeholder="e.g. B.Ed., M.A.">
+          </label>
+
+          <label>
+            Teaching Experience
+            <input type="text" name="experience" maxlength="100"
+              value="${escapeHTML(profile.experience || "")}"
+              placeholder="e.g. 5 years">
+          </label>
+
+          <label class="full-width">
+            Additional Role
+            <input type="text" name="additionalRole" maxlength="150"
+              value="${escapeHTML(profile.additionalRole || "")}"
+              placeholder="e.g. Examination Coordinator">
+          </label>
+
+          <div class="panel-actions full-width">
+            <button type="submit" class="btn btn-primary">Save Profile</button>
+          </div>
+        </form>
+      </section>
+    `;
+  }
 
   // ==========================================
   // ACADEMIC REPORTS
@@ -1185,115 +1456,107 @@ async function toggleVoiceRecording() {
     return "F";
   }
 
- 
+  function getAcademicResults() {
+    const subjects = getAcademicSubjects();
+    const marks = getAcademicMarks();
 
-function getAcademicResults() {
-  const subjects = getAcademicSubjects();
-  const marks = getAcademicMarks();
+    const results = classStudents().map(student => {
+      let total = 0;
+      let enteredSubjects = 0;
 
-  const results = classStudents().map(student => {
-    let total = 0;
-    let enteredSubjects = 0;
+      const subjectResults = subjects.map(subject => {
+        const key = academicMarkKey(student.id, subject.id);
+        const raw = marks[key];
 
-    const subjectResults = subjects.map(subject => {
-      const key = academicMarkKey(student.id, subject.id);
-      const raw = marks[key];
+        const entered =
+          raw !== undefined &&
+          raw !== null &&
+          String(raw).trim() !== "";
 
-      const entered =
-        raw !== undefined &&
-        raw !== null &&
-        String(raw).trim() !== "";
+        const mark = entered ? Number(raw) : null;
 
-      const mark = entered ? Number(raw) : null;
-
-      if (
-        entered &&
-        Number.isFinite(mark) &&
-        mark >= 0 &&
-        mark <= Number(subject.maximum)
-      ) {
-        total += mark;
-        enteredSubjects++;
-      }
-
-      return {
-        subjectId: subject.id,
-        mark,
-        entered:
+        if (
           entered &&
           Number.isFinite(mark) &&
           mark >= 0 &&
           mark <= Number(subject.maximum)
+        ) {
+          total += mark;
+          enteredSubjects++;
+        }
+
+        return {
+          subjectId: subject.id,
+          mark,
+          entered:
+            entered &&
+            Number.isFinite(mark) &&
+            mark >= 0 &&
+            mark <= Number(subject.maximum)
+        };
+      });
+
+      const maximum = subjects.reduce(
+        (sum, subject) => sum + Number(subject.maximum),
+        0
+      );
+
+      const complete =
+        subjects.length > 0 &&
+        enteredSubjects === subjects.length;
+
+      const percentage =
+        complete && maximum > 0
+          ? (total / maximum) * 100
+          : 0;
+
+      return {
+        ...student,
+        subjectResults,
+        total,
+        maximum,
+        percentage,
+        grade: getGrade(percentage),
+        enteredSubjects,
+        complete
       };
     });
 
-    const maximum = subjects.reduce(
-      (sum, subject) => sum + Number(subject.maximum),
-      0
-    );
+    results.sort((a, b) => {
+      if (a.complete !== b.complete) {
+        return a.complete ? -1 : 1;
+      }
 
-    const complete =
-      subjects.length > 0 &&
-      enteredSubjects === subjects.length;
+      if (a.complete && b.complete) {
+        return (
+          b.percentage - a.percentage ||
+          b.total - a.total ||
+          Number(a.id) - Number(b.id)
+        );
+      }
 
-    const percentage =
-      complete && maximum > 0
-        ? (total / maximum) * 100
-        : 0;
+      return Number(a.id) - Number(b.id);
+    });
 
-    return {
-      ...student,
-      subjectResults,
-      total,
-      maximum,
-      percentage,
-      grade: getGrade(percentage),
-      enteredSubjects,
-      complete
-    };
-  });
+    let rank = 0;
+    let previousPercentage = null;
 
-  
-  results.sort((a, b) => {
-    // Students with completed marks appear first, ranked by percentage.
-    if (a.complete !== b.complete) {
-      return a.complete ? -1 : 1;
-    }
+    results.forEach(student => {
+      if (!student.complete) {
+        student.rank = "—";
+        return;
+      }
 
-    // If both students have completed marks, sort by rank.
-    if (a.complete && b.complete) {
-      return (
-        b.percentage - a.percentage ||
-        b.total - a.total ||
-        Number(a.id) - Number(b.id)
-      );
-    }
+      if (student.percentage !== previousPercentage) {
+        rank++;
+        previousPercentage = student.percentage;
+      }
 
-    // If marks are incomplete, sort by roll number.
-    return Number(a.id) - Number(b.id);
-  });
+      student.rank = rank;
+    });
 
-
-  let rank = 0;
-  let previousPercentage = null;
-
-  results.forEach(student => {
-    if (!student.complete) {
-      student.rank = "—";
-      return;
-    }
-
-    if (student.percentage !== previousPercentage) {
-      rank++;
-      previousPercentage = student.percentage;
-    }
-
-    student.rank = rank;
-  });
-
-  return { subjects, students: results };
-}
-
+    return { subjects, students: results };
+  }
 
   function renderAcademicTopCards(students) {
     const complete = students.filter(s => s.complete);
@@ -1325,58 +1588,57 @@ function getAcademicResults() {
     </section>`;
   }
 
-function renderAcademicRows(students, subjects) {
-  const marks = getAcademicMarks();
+  function renderAcademicRows(students, subjects) {
+    const marks = getAcademicMarks();
 
-  if (!students.length) {
-    return `<tr><td colspan="${subjects.length + 6}">
-      No students found.
-    </td></tr>`;
+    if (!students.length) {
+      return `<tr><td colspan="${subjects.length + 6}">
+        No students found.
+      </td></tr>`;
+    }
+
+    return students.map(student => `
+      <tr>
+        <td>
+          ${student.complete ? student.rank : "—"}
+          ${student.complete && student.rank === 1 ? " 👑" : ""}
+        </td>
+        <td>
+          <strong>${escapeHTML(student.name)}</strong>
+          <div class="academic-muted">${escapeHTML(student.id)}</div>
+        </td>
+
+        ${subjects.map(subject => {
+          const key = academicMarkKey(student.id, subject.id);
+          const raw = marks[key] ?? "";
+
+          return `
+            <td>
+              <input
+                type="number"
+                class="academic-mark-input"
+                data-academic-mark="true"
+                data-student-id="${escapeHTML(student.id)}"
+                data-subject-id="${escapeHTML(subject.id)}"
+                min="0"
+                max="${Number(subject.maximum)}"
+                step="1"
+                value="${escapeHTML(raw)}"
+                aria-label="${escapeHTML(student.name)} - ${escapeHTML(subject.name)}"
+                style="width:90px;min-width:70px"
+              >
+            </td>
+          `;
+        }).join("")}
+
+        <td>${student.total} / ${student.maximum}</td>
+        <td>${student.complete
+          ? student.percentage.toFixed(2) + "%"
+          : "Pending"}</td>
+        <td>${student.complete ? student.grade : "—"}</td>
+      </tr>
+    `).join("");
   }
-
-  return students.map(student => `
-    <tr>
-      <td>
-        ${student.complete ? student.rank : "—"}
-        ${student.complete && student.rank === 1 ? " 👑" : ""}
-      </td>
-      <td>
-        <strong>${escapeHTML(student.name)}</strong>
-        <div class="academic-muted">${escapeHTML(student.id)}</div>
-      </td>
-
-      ${subjects.map(subject => {
-        const key = academicMarkKey(student.id, subject.id);
-        const raw = marks[key] ?? "";
-
-        return `
-          <td>
-            <input
-              type="number"
-              class="academic-mark-input"
-              data-academic-mark="true"
-              data-student-id="${escapeHTML(student.id)}"
-              data-subject-id="${escapeHTML(subject.id)}"
-              min="0"
-              max="${Number(subject.maximum)}"
-              step="1"
-              value="${escapeHTML(raw)}"
-              aria-label="${escapeHTML(student.name)} - ${escapeHTML(subject.name)}"
-              style="width:90px;min-width:70px"
-            >
-          </td>
-        `;
-      }).join("")}
-
-      <td>${student.total} / ${student.maximum}</td>
-      <td>${student.complete
-        ? student.percentage.toFixed(2) + "%"
-        : "Pending"}</td>
-      <td>${student.complete ? student.grade : "—"}</td>
-    </tr>
-  `).join("");
-}
-
 
   function renderAcademicReports() {
     const { subjects, students } = getAcademicResults();
@@ -1391,7 +1653,7 @@ function renderAcademicRows(students, subjects) {
         <article class="academic-stat"><span>Completed reports</span><strong>${completed.length}/${students.length}</strong></article>
         <article class="academic-stat"><span>Class average</span><strong>${completed.length ? average.toFixed(1) + "%" : "—"}</strong></article>
       </section>
-      
+
       ${renderAcademicTopCards(students)}
 
       <section class="academic-panel">
@@ -1443,10 +1705,8 @@ function renderAcademicRows(students, subjects) {
         <p class="academic-note">👑 First place · ⭐ Second and third place. Sample grading: A+ 90%+, A 80%+, B 70%+, C 60%+, D 50%+, F below 50%. Follow your school's official grading policy.</p>
       </section>`;
   }
-
-  function renderCurrentAcademicPage() {
+    function renderCurrentAcademicPage() {
     if (state.page === "academics") {
-
       $("#pageContent").innerHTML = renderAcademicReports();
     }
   }
@@ -1469,7 +1729,6 @@ function renderAcademicRows(students, subjects) {
     const subjects = getAcademicSubjects();
     const inputs = $$('[data-academic-mark="true"]');
 
-    // Validate all visible inputs before saving any of them.
     for (const input of inputs) {
       const raw = input.value.trim();
       if (raw === "") continue;
@@ -1591,10 +1850,7 @@ function renderAcademicRows(students, subjects) {
   function downloadCSV(rows, filename) {
     const csv = rows.map(row => row.map(value => {
       let cell = String(value ?? "");
-
-      // Protect spreadsheet users from formula injection.
       if (/^[\s]*[=+\-@]/.test(cell)) cell = "'" + cell;
-
       return `"${cell.replace(/"/g, '""')}"`;
     }).join(",")).join("\r\n");
 
@@ -1610,7 +1866,6 @@ function renderAcademicRows(students, subjects) {
     link.click();
     link.remove();
 
-    // Delay revocation so the browser can begin the download.
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast("CSV export prepared.");
   }
@@ -1621,34 +1876,53 @@ function renderAcademicRows(students, subjects) {
 
     if (type === "students") {
       rows = [
-        ["Student ID", "Student Name", "Class"],
-        ...classStudents().map(s => [s.id, s.name, s.className])
+        ["Roll No.", "Student Name", "Class"],
+        ...classStudents().map((student, index) => [index + 1, student.name, student.className])
       ];
       filename = "shikshasetu-students.csv";
     } else if (type === "attendance") {
-      rows = getReportRows("attendance", today());
-      filename = `attendance-${today()}.csv`;
+      const date = today();
+      const records = state.attendance[date] || {};
+      rows = [
+        ["Roll No.", "Student Name", "Attendance"],
+        ...classStudents().map((student, index) => [
+          index + 1,
+          student.name,
+          records[student.id] || "Not Marked"
+        ])
+      ];
+      filename = `attendance-${date}.csv`;
     } else if (type === "meals") {
       rows = [
         ["Date", "Menu", "Students Served", "Status", "Notes"],
-        ...Object.entries(state.meals).map(([date, meal]) =>
-          [date, meal.menu, meal.served, meal.status, meal.notes]
-        )
+        ...Object.entries(state.meals).sort((a, b) => a[0].localeCompare(b[0])).map(([date, meal]) => [
+          date, meal.menu, meal.served, meal.status, meal.notes || ""
+        ])
       ];
       filename = "shikshasetu-meal-records.csv";
     } else {
-      const typeValue = $("#reportType")?.value || "attendance";
-      const date = $("#reportDate")?.value || today();
-      rows = getReportRows(typeValue, date);
-      filename = `shikshasetu-${typeValue}-${date}.csv`;
+      const options = getReportOptionsFromUI();
+      rows = getReportRows(options.type, options);
+      if (!rows) {
+        showToast("Please select a valid report period.");
+        return;
+      }
+      if (rows.reportMeta.totalSavedMarks === 0) {
+        showToast("No saved attendance is available for this period.");
+        return;
+      }
+      const periodKey = options.type === "weekly"
+        ? `${options.startDate}-to-${options.endDate}`
+        : options.type === "monthly"
+          ? options.month
+          : `academic-year-${options.year}-${Number(options.year) + 1}`;
+      filename = `shikshasetu-${options.type}-attendance-${periodKey}.csv`;
     }
 
     downloadCSV(rows, filename);
   }
 
   // ---------- PAGE RENDERER ----------
-  // IMPORTANT: Every page function is in this same IIFE.
-  // The comma after renderProfile fixes the original syntax error.
 
   function renderPage(page) {
     if (!state.teacher) return "";
@@ -1671,137 +1945,137 @@ function renderAcademicRows(students, subjects) {
   // ---------- EVENT HANDLERS ----------
 
   function bindEvents() {
-    
-    // Teacher chat: send text messages.
+    // Save attendance whenever a checkbox changes.
+    document.addEventListener("change", event => {
+      const checkbox = event.target instanceof Element
+        ? event.target.closest(".attendance-checkbox")
+        : null;
+      if (!checkbox) return;
+      handleAttendanceCheckboxChange(checkbox);
+    });
+
     // Profile: save teacher details.
-document.addEventListener("submit", event => {
-  if (event.target.id !== "profileForm") return;
+    document.addEventListener("submit", event => {
+      if (event.target.id !== "profileForm") return;
 
-  event.preventDefault();
+      event.preventDefault();
 
-  const teacher = state.teacher;
-  if (!teacher) return;
+      const teacher = state.teacher;
+      if (!teacher) return;
 
-  teacher.profile = teacher.profile || {};
+      teacher.profile = teacher.profile || {};
+      const formData = new FormData(event.target);
 
-  const formData = new FormData(event.target);
+      teacher.profile.email = formData.get("email") || "";
+      teacher.profile.contact = formData.get("contact") || "";
+      teacher.profile.qualification = formData.get("qualification") || "";
+      teacher.profile.experience = formData.get("experience") || "";
+      teacher.profile.additionalRole = formData.get("additionalRole") || "";
 
-  teacher.profile.email = formData.get("email") || "";
-  teacher.profile.contact = formData.get("contact") || "";
-  teacher.profile.qualification = formData.get("qualification") || "";
-  teacher.profile.experience = formData.get("experience") || "";
-  teacher.profile.additionalRole = formData.get("additionalRole") || "";
+      saveData();
+      showToast("Profile saved successfully!");
+    });
 
-  saveData();
-  showToast("Profile saved successfully!");
-});
-
-    // Teacher chat: choose and send photos.
+    // Teacher chat: select and send photos.
     document.addEventListener("change", event => {
       if (event.target.id !== "chatPhotoInput") return;
 
       const files = Array.from(event.target.files || []);
-
-      // Allow the same photo to be selected again later.
       event.target.value = "";
-
       sendChatPhotos(files);
     });
-    // Profile photo upload handler
-document.addEventListener("change", event => {
-  if (event.target.id !== "profilePhotoInput") return;
 
-  const file = event.target.files?.[0];
-  if (!file) return;
+    // Profile photo upload handler.
+    document.addEventListener("change", event => {
+      if (event.target.id !== "profilePhotoInput") return;
 
-  if (!file.type.startsWith("image/")) {
-    showToast("Please select an image.");
-    return;
-  }
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-  if (file.size > 2 * 1024 * 1024) {
-    showToast("Choose an image smaller than 2 MB.");
-    return;
-  }
+      if (!file.type.startsWith("image/")) {
+        showToast("Please select an image.");
+        return;
+      }
 
-  const teacher = state.teacher;
-  if (!teacher) return;
+      if (file.size > 2 * 1024 * 1024) {
+        showToast("Choose an image smaller than 2 MB.");
+        return;
+      }
 
-  const reader = new FileReader();
+      const teacher = state.teacher;
+      if (!teacher) return;
 
-  reader.onload = () => {
-    teacher.profile = teacher.profile || {};
-    teacher.profile.photo = reader.result;
+      const reader = new FileReader();
 
-    try {
-      localStorage.setItem(
-        "shikshasetu_profile_" + teacher.id,
-        JSON.stringify(teacher.profile)
-      );
-    } catch (error) {
-      showToast("Photo could not be saved.");
-      return;
-    }
+      reader.onload = () => {
+        teacher.profile = teacher.profile || {};
+        teacher.profile.photo = reader.result;
 
-    const avatar = document.querySelector(".profile-avatar-wrap");
+        try {
+          localStorage.setItem(
+            "shikshasetu_profile_" + teacher.id,
+            JSON.stringify(teacher.profile)
+          );
+        } catch (error) {
+          showToast("Photo could not be saved.");
+          return;
+        }
 
-    if (avatar) {
-      const img = document.createElement("img");
-      img.src = reader.result;
-      img.className = "profile-photo";
-      img.alt = "Teacher profile photo";
-      const oldPhoto = avatar.querySelector(".profile-photo");
+        const avatar = document.querySelector(".profile-avatar-wrap");
 
-        if (oldPhoto) {
-         oldPhoto.replaceWith(img);
-        } else {
-             avatar.prepend(img);
-            }
-const cameraLabel = document.createElement("label");
-cameraLabel.className = "profile-camera-btn";
-cameraLabel.title = "Change profile photo";
+        if (avatar) {
+          const img = document.createElement("img");
+          img.src = reader.result;
+          img.className = "profile-photo";
+          img.alt = "Teacher profile photo";
 
- cameraLabel.innerHTML = `
-    <span>
-        <svg xmlns="http://www.w3.org/2000/svg"
-             width="24"
-             height="24"
-             viewBox="0 0 24 24"
-             fill="none"
-             stroke="currentColor"
-             stroke-width="2"
-             stroke-linecap="round"
-             stroke-linejoin="round">
+          const oldPhoto = avatar.querySelector(".profile-photo");
 
-            <path d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9
-                     a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9
-                     a2 2 0 0 0-2-2h-4l-2-3z"/>
+          if (oldPhoto) {
+            oldPhoto.replaceWith(img);
+          } else {
+            avatar.prepend(img);
+          }
 
-            <circle cx="12" cy="12" r="3"/>
-        </svg>
-    </span>
+          const cameraLabel = document.createElement("label");
+          cameraLabel.className = "profile-camera-btn";
+          cameraLabel.title = "Change profile photo";
+          cameraLabel.innerHTML = `
+            <span>
+              <svg xmlns="http://www.w3.org/2000/svg"
+                   width="24"
+                   height="24"
+                   viewBox="0 0 24 24"
+                   fill="none"
+                   stroke="currentColor"
+                   stroke-width="2"
+                   stroke-linecap="round"
+                   stroke-linejoin="round">
+                <path d="M14 4h-4l-2 3H4a2 2 0 0 0-2 2v9
+                         a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9
+                         a2 2 0 0 0-2-2h-4l-2-3z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </span>
+            <input type="file"
+                   id="profilePhotoInput"
+                   accept="image/*"
+                   hidden>
+          `;
+          avatar.appendChild(cameraLabel);
+        }
 
-    <input type="file"
-           id="profilePhotoInput"
-           accept="image/*"
-           hidden>
+        showToast("Profile photo updated!");
+        event.target.value = "";
+      };
 
-`;
-avatar.appendChild(cameraLabel);
-    }
-
-    showToast("Profile photo updated!");
-    event.target.value = "";
-  };
-
-  reader.readAsDataURL(file);
-});
+      reader.readAsDataURL(file);
+    });
 
     // Teacher chat: record voice messages.
     document.addEventListener("click", event => {
       const button = event.target.closest("#recordVoiceBtn");
       if (!button) return;
-
       toggleVoiceRecording();
     });
 
@@ -1903,6 +2177,14 @@ avatar.appendChild(cameraLabel);
       }
     });
 
+    // Update report filter controls.
+    document.addEventListener("change", event => {
+      if (event.target instanceof Element && event.target.id === "reportType") {
+        updateReportFields();
+      }
+    });
+
+    // Handle dashboard task checkboxes.
     document.addEventListener("change", event => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -1988,7 +2270,6 @@ avatar.appendChild(cameraLabel);
     }
   }
 
- 
   // ---------- INITIALIZATION ----------
 
   function init() {
@@ -2018,153 +2299,3 @@ avatar.appendChild(cameraLabel);
     init();
   }
 })();
-
-
-
-/* ===== SHIKSHASETU ATTENDANCE UPDATE ===== */
-
-(function () {
-    const students = [
-        { name: "Aarav Patel", present: false },
-        { name: "Diya Shah", present: false },
-        { name: "Krishna Joshi", present: false },
-        { name: "Ananya Desai", present: false },
-        { name: "Vivaan Mehta", present: false },
-        { name: "Student 6", present: false },
-        { name: "Student 7", present: false },
-        { name: "Student 8", present: false },
-        { name: "Student 9", present: false },
-        { name: "Student 10", present: false }
-    ];
-
-    function renderAttendance() {
-        const content = document.getElementById("pageContent");
-        if (!content) return;
-
-        const present = students.filter(s => s.present).length;
-        const absent = students.length - present;
-
-        content.innerHTML = `
-            <div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr));">
-                <div class="card">
-                    <p>Present</p>
-                    <h2 style="color:#52734b">${present}</h2>
-                </div>
-                <div class="card">
-                    <p>Absent</p>
-                    <h2 style="color:#a53535">${absent}</h2>
-                </div>
-                <div class="card">
-                    <p>Total Students</p>
-                    <h2>${students.length}</h2>
-                </div>
-            </div>
-
-            <div class="card" style="margin-top:24px;">
-                <div class="section-title">
-                    <div>
-                        <h2>Daily Attendance</h2>
-                        <p>${new Date().toISOString().slice(0, 10)}</p>
-                    </div>
-                    <button class="btn" id="exportAttendanceCSV">
-                        Export
-                    </button>
-                </div>
-
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Roll No.</th>
-                                <th>Student Name</th>
-                                <th>Attendance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${students.map((student, index) => `
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td>${student.name}</td>
-                                    <td>
-                                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-                                            <input
-                                                type="checkbox"
-                                                class="attendance-checkbox"
-                                                data-index="${index}"
-                                                ${student.present ? "checked" : ""}
-                                                style="width:19px;height:19px;accent-color:#52734b;"
-                                            >
-                                            <span style="color:${student.present ? "#52734b" : "#a53535"}">
-                                                ${student.present ? "Present" : "Absent"}
-                                            </span>
-                                        </label>
-                                    </td>
-                                </tr>
-                            `).join("")}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-
-        content.querySelectorAll(".attendance-checkbox").forEach(box => {
-            box.addEventListener("change", function () {
-                students[Number(this.dataset.index)].present = this.checked;
-                renderAttendance();
-            });
-        });
-
-        document.getElementById("exportAttendanceCSV")
-            .addEventListener("click", function () {
-                const rows = [
-                    ["Roll No.", "Student Name", "Attendance"],
-                    ...students.map((student, index) => [
-                        index + 1,
-                        student.name,
-                        student.present ? "Present" : "Absent"
-                    ])
-                ];
-
-                const csv = rows.map(row =>
-                    row.map(value =>
-                        '"' + String(value).replace(/"/g, '""') + '"'
-                    ).join(",")
-                ).join("\r\n");
-
-                const blob = new Blob(["\uFEFF" + csv], {
-                    type: "text/csv;charset=utf-8;"
-                });
-
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = "attendance.csv";
-                link.click();
-                URL.revokeObjectURL(url);
-            });
-    }
-
-    // Open the updated attendance page when its menu button is clicked.
-    document.addEventListener("click", function (event) {
-        const button = event.target.closest('.nav-btn[data-page="attendance"]');
-        if (!button) return;
-
-        event.preventDefault();
-        event.stopImmediatePropagation();
-
-        document.querySelectorAll(".nav-btn").forEach(nav => {
-            nav.classList.toggle("active", nav === button);
-        });
-
-        document.getElementById("pageTitle").textContent = "Attendance";
-        document.getElementById("pageSubtitle").textContent =
-            "Record and review student attendance";
-
-        const sidebar = document.getElementById("sidebar");
-        if (sidebar) sidebar.classList.remove("open");
-
-        renderAttendance();
-    }, true);
-})();
- 
-

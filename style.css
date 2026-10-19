@@ -4022,3 +4022,202 @@ button[title*="Download CSV"]:hover {
     width: 20px;
     height: 20px;
 }
+
+/* My Reports: keep all three fields in one row */
+#reportType,
+#reportStartDate,
+#reportEndDate {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.panel:has(#reportType) .form-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 0.8fr;
+  gap: 16px;
+  align-items: end;
+}
+
+.panel:has(#reportType) .form-grid label {
+  min-width: 0;
+}
+
+.panel:has(#reportType) input[type="date"] {
+  width: 100%;
+  max-width: 260px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 650px) {
+  .panel:has(#reportType) .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel:has(#reportType) input[type="date"] {
+    max-width: 100%;
+  }
+}
+
+/* Attendance Reports */
+.attendance-report-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #d8c9c2;
+  border-radius: 6px;
+}
+
+.attendance-report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  background: #fff;
+}
+
+.attendance-report-table th,
+.attendance-report-table td {
+  border: 1px solid #cfc7c3;
+  padding: 7px 8px;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.attendance-report-table thead th {
+  background: #f4c9ad;
+  color: #33241d;
+  font-weight: 700;
+}
+
+.attendance-report-table td:nth-child(2),
+.attendance-report-table th:nth-child(2) {
+  text-align: left;
+  min-width: 130px;
+}
+
+.weekly-attendance-table,
+.monthly-attendance-table {
+  min-width: max-content;
+}
+
+.monthly-attendance-table th,
+.monthly-attendance-table td {
+  min-width: 36px;
+  padding: 6px 5px;
+}
+
+.yearly-attendance-table {
+  min-width: 900px;
+}
+
+.yearly-attendance-table thead th {
+  background: #f4c9ad;
+  color: black;
+}
+
+.yearly-attendance-table .monthly-working-summary {
+  background:#f4c9ad;
+  font-weight: 700;
+}
+
+@media (max-width: 650px) {
+  .attendance-report-table {
+    font-size: 11px;
+  }
+
+  .attendance-report-table th,
+  .attendance-report-table td {
+    padding: 5px;
+  }
+}
+
+
+/* Attendance Reports - final layout fixes */
+
+.panel:has(#reportType) .report-type-filter {
+  display: grid;
+  grid-template-columns: minmax(220px, 360px);
+  gap: 8px;
+  margin-bottom: 18px;
+  color: #4e3d41;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.panel:has(#reportType) .report-type-filter select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #ddcdd0;
+  border-radius: 10px;
+  background: white;
+}
+
+.panel:has(#reportType) #weeklyReportFields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
+.panel:has(#reportType) #monthlyReportFields,
+.panel:has(#reportType) #yearlyReportFields {
+  grid-template-columns: minmax(220px, 360px);
+  margin-top: 14px;
+}
+
+.attendance-report-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #d8c9c2;
+  border-radius: 8px;
+}
+
+.attendance-report-table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 12px;
+}
+
+.attendance-report-table th,
+.attendance-report-table td {
+  padding: 8px;
+  border: 1px solid #d8c9c2;
+  text-align: center;
+  white-space: pre-line;
+}
+
+.attendance-report-table thead th {
+  background:  #7d3535ee;
+  color: #392821;
+  font-weight: 700;
+}
+
+.attendance-report-table th:nth-child(2),
+.attendance-report-table td:nth-child(2) {
+  min-width: 135px;
+  text-align: left;
+}
+
+.attendance-report-table .monthly-working-summary {
+  background: #fcf8f6;
+  font-weight: 700;
+}
+
+.yearly-attendance-table thead th {
+  background: #7d3535ee;
+  color: black;
+}
+
+@media (max-width: 650px) {
+  .panel:has(#reportType) #weeklyReportFields {
+    grid-template-columns: 1fr;
+  }
+
+  .panel:has(#reportType) #monthlyReportFields,
+  .panel:has(#reportType) #yearlyReportFields {
+    grid-template-columns: 1fr;
+  }
+}
+
