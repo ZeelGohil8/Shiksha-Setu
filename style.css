@@ -2548,8 +2548,34 @@ tbody tr:hover {
 /* Dashboard quick action cards */
 .quick-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* Compact teacher Quick Actions, matching the single-row Parent Quick Access. */
+.quick-actions .action-card {
+  padding: 12px 14px;
+  gap: 6px;
+  min-height: 112px;
+  border-radius: 13px;
+}
+
+.quick-actions .action-card > span {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+.quick-actions .action-card strong {
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.quick-actions .action-card small {
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .action-card {
@@ -3009,6 +3035,22 @@ tbody tr:hover {
 
   .full-width {
     grid-column: auto;
+  }
+
+  .quick-actions {
+    gap: 8px;
+  }
+
+  .quick-actions .action-card {
+    padding: 10px 9px;
+  }
+
+  .quick-actions .action-card strong {
+    font-size: 12px;
+  }
+
+  .quick-actions .action-card small {
+    font-size: 10px;
   }
 
   .panel-header {
@@ -4221,3 +4263,564 @@ button[title*="Download CSV"]:hover {
   }
 }
 
+
+.login-role-options {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.login-role {
+  flex: 1;
+  padding: 12px 8px;
+  border: 1px solid #e5d8d2;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.login-role.active {
+  background: #f4ece8;
+  border-color: #b89a8d;
+  color: #866c63;
+  font-weight: 600;
+}
+
+.login-submit {
+  width: 100%;
+  padding: 13px;
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.login-help {
+  margin-top: 16px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+/* ShikshaSetu redesigned split login page */
+.login-screen { min-height:100vh; grid-template-columns: 1fr 1fr; background:#fff; }
+.login-art { background:linear-gradient(145deg,#702522 0%,#8e302b 55%,#a4473c 100%); padding:clamp(30px,6vw,80px); }
+.login-art:before { width:490px;height:490px;right:-120px;top:9%; }
+.login-art:after { width:290px;height:290px;right:-8px;top:25%; }
+.login-brand { display:flex;align-items:center;gap:10px;color:#fff;font-weight:850;font-size:25px;position:relative;z-index:1; }
+.login-brand img { width:48px;height:48px;object-fit:contain;border-radius:4px;background:#fff; }
+.login-art-copy { position:relative;z-index:1;max-width:600px;margin:auto 0; }
+.login-art h1 { font-size:clamp(34px,3.4vw,54px);line-height:1.25;letter-spacing:-1px;margin:0 0 24px; }
+.login-art .lead { color:#f7e8e4;font-size:17px;line-height:1.8;max-width:570px; }
+.login-art .feature-list { gap:17px;margin-top:34px; }
+.login-art .feature-icon { width:46px;height:46px;border-radius:13px;background:#ffffff22;font-size:21px;flex-shrink:0; }
+.login-art .feature-item { font-size:16px; }
+.login-art footer { position:relative;z-index:1;color:#f4d9d3;font-size:13px; }
+.login-panel { padding:38px 30px; }
+.login-box { width:min(100%,505px); }
+.login-box h2 { font-size:36px;letter-spacing:-.7px;margin-bottom:8px;color:#302725; }
+.login-box .sub { color:#817773;font-size:16px;margin:0 0 25px; }
+.login-box label { display:block;font-size:14px;font-weight:700;color:#4a211f;margin:17px 0 8px; }
+.login-box input { width:100%;height:56px;padding:0 16px;border:1px solid #e5d8d2;border-radius:13px;background:#fffdfc;outline:none; }
+.login-box input:focus { border-color:#8e302b;box-shadow:0 0 0 3px #8e302b18; }
+.login-role-options { margin:0 0 22px; }
+.login-role { min-height:48px;border-radius:12px;font-weight:650; }
+.login-role.active { background:#f5eae6;border-color:#b88c80;color:#762c27; }
+.login-submit { margin-top:18px;min-height:58px;background:linear-gradient(100deg,#7c2924,#a03e34);color:#fff;font-weight:800;box-shadow:0 5px 12px #70252220; }
+.login-submit:hover { filter:brightness(1.04); }
+.login-note { background:#f5eae5;color:#79584d;margin-top:20px;padding:14px 16px;line-height:1.6;border-radius:13px; }
+.demo-account-area { border-top:1px solid #e8dfda;margin-top:24px;padding-top:20px; }
+.demo-account-area h3 { font-size:14px;margin:0 0 12px; }
+.demo-account-row { display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0e9e5; }
+.demo-account-row strong,.demo-account-row small { display:block; }
+.demo-account-row strong { font-size:13px; }
+.demo-account-row small,.demo-extra { color:#8a7068;font-size:12px;margin-top:5px; }
+.demo-account-row button { border:0;background:transparent;color:#8a3b32;font-weight:750;white-space:nowrap;padding:8px; }
+.demo-account-row button:hover { text-decoration:underline; }
+.mobile-login-brand { display:none; }
+.login-error { color:#a53535;font-size:13px;margin:10px 0 0; }
+.parent-welcome { background:linear-gradient(120deg,#fff,#f8eeea); }
+.parent-welcome h2 { margin:4px 0 8px; }
+.parent-stats { margin:18px 0; }
+.parent-quick-links { display:flex;flex-wrap:wrap;gap:12px;margin-top:15px; }
+.parent-info-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px; }
+.parent-info-item { padding:16px;border:1px solid var(--line);border-radius:12px;background:#fff; }
+.parent-info-item span,.parent-info-item strong { display:block; }
+.parent-info-item span { color:var(--muted);font-size:12px;margin-bottom:7px; }
+.parent-info-item strong { color:var(--text); }
+@media (max-width:900px) { .login-screen { grid-template-columns:1fr; } .login-art { min-height:300px;padding:28px;gap:24px; } .login-art-copy { margin:25px 0; } .login-art h1 { font-size:36px; } .login-art .feature-list { display:none; } .login-art footer { margin-top:15px; } .login-panel { padding:32px 22px; } .login-box { max-width:520px; } }
+@media (max-width:560px) { .login-art { min-height:220px;padding:24px; } .login-art h1 { font-size:30px; } .login-art .lead { font-size:14px;line-height:1.5; } .login-art footer { font-size:11px; } .login-box h2 { font-size:29px; } .parent-info-grid { grid-template-columns:1fr; } .demo-account-row { align-items:flex-start; } }
+
+
+/* In-page back buttons for Parent and Teacher sections */
+.parent-back-row,
+.teacher-back-row { display:flex; justify-content:flex-start; margin:0 0 16px; }
+.parent-back-btn,
+.teacher-back-btn { display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); background:#fff; color:var(--blue); border-radius:10px; padding:10px 15px; font-weight:700; box-shadow:0 2px 8px rgba(80,39,32,.05); }
+.parent-back-btn:hover,
+.teacher-back-btn:hover { background:#fbf4f1; transform:translateY(-1px); }
+#parentNavigation { margin-bottom:16px; }
+#parentNavigation .nav-btn { width:100%; text-align:left; }
+
+/* Keep the teacher navigation and its Log out control reachable on shorter screens. */
+.sidebar { overflow-y:auto; overscroll-behavior:contain; }
+.sidebar-bottom { flex-shrink:0; padding-top:6px; }
+#logoutBtn { border:1px solid #ead9dc; color:#8b302a; background:#fff; margin-top:8px; }
+#logoutBtn:hover { background:#fbefed; color:#702632; }
+
+
+/* ---------- Parent portal refinements ---------- */
+/* .nav-btn uses display:flex, so explicitly override the browser's [hidden] default. */
+.nav-btn[hidden],
+#parentNavigation[hidden] {
+    display: none !important;
+}
+
+.parent-mode #sidebar > .nav-btn[data-page],
+.parent-mode #sidebar > .nav-label {
+    display: none !important;
+}
+
+.parent-mode #parentNavigation {
+    display: block;
+}
+
+.parent-quick-access-panel,
+.parent-school-notice {
+    margin-top: 18px;
+}
+
+.parent-quick-access-panel .panel-heading {
+    margin-bottom: 0;
+}
+
+.parent-quick-links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+    align-items: stretch;
+}
+
+/* Teacher-style quick-action cards, scaled down so all three fit in one row. */
+.parent-quick-links .parent-action-card {
+    width: 100%;
+    min-width: 0;
+    min-height: 112px;
+    padding: 12px 14px;
+    gap: 6px;
+    border-radius: 13px;
+}
+
+.parent-quick-links .parent-action-card > span {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.parent-quick-links .parent-action-card strong {
+    display: block;
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.parent-quick-links .parent-action-card small {
+    display: block;
+    font-size: 11px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.parent-attendance-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 20px 0 12px;
+}
+
+.parent-attendance-track {
+    height: 8px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: #f1e5e0;
+    margin-top: 13px;
+}
+
+.parent-attendance-track span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #762722, #a74640);
+}
+
+@media (max-width: 650px) {
+    .parent-quick-links { gap: 6px; }
+    .parent-quick-links .parent-action-card { padding: 9px 7px; min-height: 105px; }
+    .parent-quick-links .parent-action-card > span { width: 28px; height: 28px; font-size: 14px; }
+    .parent-quick-links .parent-action-card strong { font-size: 11px; }
+    .parent-quick-links .parent-action-card small { font-size: 10px; }
+    .parent-attendance-stats { grid-template-columns: 1fr; }
+}
+
+
+/* ---------- Shared Teacher drafts / Parent school notices ---------- */
+#publishDraft:disabled {
+  opacity: 0.78;
+  cursor: default;
+  filter: saturate(0.8);
+}
+
+.parent-school-notice .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.parent-published-notices {
+  display: grid;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.parent-published-notice {
+  border: 1px solid #eadbd6;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fffdfc, #fff8f5);
+  padding: 16px 18px;
+}
+
+.parent-published-notice-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.parent-published-notice-heading h4 {
+  color: var(--navy, #4a211f);
+  font-size: 16px;
+  line-height: 1.4;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.parent-published-notice-body {
+  color: var(--text, #302725);
+  white-space: normal;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.parent-published-notice-meta {
+  border-top: 1px solid #eee3df;
+  padding-top: 10px;
+  margin: 12px 0 0;
+}
+
+.parent-notices-empty {
+  margin-top: 12px;
+  border: 1px dashed #decac3;
+  border-radius: 12px;
+  padding: 18px;
+  background: #fffaf8;
+}
+
+.parent-notices-empty p { margin: 0; }
+.parent-notices-empty .muted { margin-top: 5px; }
+
+@media (max-width: 540px) {
+  .parent-published-notice { padding: 13px; }
+  .parent-published-notice-heading { flex-direction: column; }
+}
+
+/* Weekly school menu shared by Teacher and Parent portals. */
+.weekly-meal-menu-panel {
+  margin-bottom: 18px;
+}
+.weekly-meal-menu-panel .panel-header {
+  margin-bottom: 12px;
+}
+.weekly-meal-menu-panel table {
+  min-width: 420px;
+}
+
+
+/* Auto-selected weekday menu in the teacher meal register (not editable). */
+.meal-menu-display {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 74px;
+  padding: 12px 14px;
+  border: 1px solid #ddcdd0;
+  border-radius: 10px;
+  background: #fbf4f3;
+  color: #382b2e;
+}
+.meal-menu-display span {
+  color: #817477;
+  font-size: 12px;
+  font-weight: 600;
+}
+.meal-menu-display strong {
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 650px) {
+  .meal-menu-display { min-height: 66px; }
+}
+
+
+/* Teacher identity replaces the My Profile label in the navigation. */
+.teacher-identity-nav {
+    gap: 10px;
+    align-items: center;
+    min-height: 56px;
+    padding: 9px 10px;
+}
+.teacher-identity-nav .teacher-nav-avatar {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    border-radius: 11px;
+    font-size: 12px;
+    background: #f2e1dc;
+    color: #8b302a;
+}
+.teacher-nav-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    overflow: hidden;
+}
+.teacher-nav-details strong {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: inherit;
+    font-size: 12px;
+    line-height: 1.35;
+    font-weight: 800;
+}
+.teacher-nav-details small {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.35;
+    margin-top: 2px;
+}
+.teacher-identity-nav.active .teacher-nav-details small {
+    color: inherit;
+    opacity: .8;
+}
+/* Footer identity remains available for parent accounts only. */
+#sidebarProfileMini.hidden { display: none !important; }
+
+/* Parent profile: keep the same polished layout as the teacher profile. */
+.parent-profile-section-title {
+    margin: 4px 0 0;
+    padding: 13px 0 9px;
+    border-bottom: 1px solid #f0e1dc;
+    color: #7c302b;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: .1px;
+}
+
+.parent-family-profile-card .profile-top {
+    margin-bottom: 24px;
+}
+
+.parent-family-profile-card .profile-avatar-wrap {
+    width: 108px;
+    height: 108px;
+}
+
+.parent-family-profile-card .profile-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 108px;
+    height: 108px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background: #7c2634;
+    box-shadow: 0 3px 12px rgba(50, 30, 25, .2);
+    color: #fff;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.parent-family-profile-card .profile-form textarea {
+    min-height: 92px;
+    resize: vertical;
+}
+
+.parent-identity-nav {
+    margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+    .parent-profile-section-title {
+        padding-top: 10px;
+    }
+}
+
+
+/* Parent profile camera uses the same working photo-upload control as Teacher Profile. */
+.parent-family-profile-card .profile-avatar-wrap {
+  position: relative;
+  overflow: visible;
+}
+.parent-family-profile-card .profile-avatar-wrap .profile-photo {
+  display: block;
+  width: 108px;
+  height: 108px;
+  object-fit: cover;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 3px 12px rgba(50, 30, 25, .2);
+}
+.parent-family-profile-card .profile-camera-btn {
+  z-index: 4;
+}
+
+
+/* Faculty directory displayed on the Parent Dashboard. */
+.parent-faculty-panel {
+  margin-top: 18px;
+}
+.parent-faculty-panel .panel-header {
+  margin-bottom: 14px;
+}
+.parent-faculty-panel .panel-header h3 {
+  margin: 0 0 5px;
+}
+.parent-faculty-panel .panel-header p {
+  margin: 0;
+}
+.parent-faculty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.parent-faculty-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: linear-gradient(135deg, #fff, #fffaf8);
+}
+.parent-faculty-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #f4e5e0;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 800;
+}
+.parent-faculty-main {
+  min-width: 0;
+}
+.parent-faculty-main h4 {
+  margin: 1px 0 5px;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.parent-faculty-subject {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.parent-faculty-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 750;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.parent-faculty-phone:hover {
+  text-decoration: underline;
+}
+.parent-faculty-note {
+  margin: 14px 0 0;
+  line-height: 1.5;
+}
+@media (max-width: 900px) {
+  .parent-faculty-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .parent-faculty-grid { grid-template-columns: 1fr; }
+  .parent-faculty-card { padding: 13px; }
+}
+
+/* Language selector: available before login and throughout the application */
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.language-switcher select {
+  min-height: 38px;
+  min-width: 112px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  padding: 7px 30px 7px 10px;
+  cursor: pointer;
+  outline: none;
+}
+.language-switcher select:focus {
+  border-color: var(--blue2);
+  box-shadow: 0 0 0 3px rgba(132,45,43,.12);
+}
+.login-language-switcher {
+  justify-content: flex-end;
+  margin: -5px 0 18px;
+}
+.login-language-switcher label { margin: 0 !important; }
+.app-language-switcher {
+  padding: 0 2px;
+  gap: 7px;
+}
+.app-language-switcher .language-switcher-label { white-space: nowrap; }
+.app-language-switcher select { min-width: 96px; min-height: 35px; font-size: 12px; }
+
+@media (max-width: 1100px) {
+  .topbar { padding-left: 20px; padding-right: 20px; }
+  .top-actions { gap: 7px; }
+  .app-language-switcher .language-switcher-label { display: none; }
+}
+@media (max-width: 700px) {
+  .topbar { padding-left: 12px; padding-right: 12px; }
+  .topbar p { max-width: 180px; }
+  .app-language-switcher select { min-width: 82px; width: 82px; padding-left: 7px; padding-right: 4px; }
+  #syncStatus { display: none; }
+  .top-actions { gap: 5px; }
+}
