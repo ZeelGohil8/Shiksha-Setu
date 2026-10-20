@@ -78,12 +78,37 @@
         <div class="profile-mini hidden" id="sidebarProfileMini" aria-hidden="true"><div class="avatar" id="sideAvatar">PS</div><div><strong id="sideName">Priya Sharma</strong><span id="sideRole">Teacher · TCH0001</span></div></div>
       </div>
     </aside>
+
     <main class="main">
-      <header class="topbar"><div class="topbar-left"><button type="button" class="icon-btn mobile-menu" id="menuBtn" aria-label="Open navigation">☰</button><div><h1 id="pageTitle">Dashboard</h1><p id="pageSubtitle">Your school day, organized.</p></div></div><div class="top-actions"><label class="language-switcher app-language-switcher" for="languageSelectApp"><span class="language-switcher-label">Language</span><select id="languageSelectApp" aria-label="Choose website language"><option value="en">English</option><option value="gu">Gujarati</option><option value="hi">Hindi</option></select></label><span class="pill green" id="syncStatus">● Demo data</span><button type="button" class="icon-btn" id="notificationBtn" aria-label="Notifications">♧<span class="dot"></span></button><div class="avatar" id="topAvatar">PS</div></div></header>
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="icon-btn mobile-menu" id="menuBtn" aria-label="Open navigation">☰</button>
+          <div>
+            <h1 id="pageTitle">Dashboard</h1>
+            <p id="pageSubtitle">Your school day, organized.</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <label class="language-switcher app-language-switcher" for="languageSelectApp">
+            <span class="language-switcher-label">Language</span>
+            <select id="languageSelectApp" aria-label="Choose website language">
+              <option value="en">English</option>
+              <option value="gu">Gujarati</option>
+              <option value="hi">Hindi</option>
+            </select>
+          </label>
+          <span class="pill green" id="syncStatus">● Demo data</span>
+          <button type="button" class="icon-btn" id="notificationBtn" aria-label="Notifications">♧<span class="dot"></span></button>
+          <div class="avatar" id="topAvatar">PS</div>
+        </div>
+      </header>
       <div class="content" id="pageContent"></div>
     </main>
   </div>
-  <div id="modalRoot"></div><div id="toastRoot" aria-live="polite"></div>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot" aria-live="polite"></div>
+
   <script src="script.js"></script>
 </body>
 </html>

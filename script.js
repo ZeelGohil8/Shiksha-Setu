@@ -86,6 +86,7 @@
     meals: {},
     notices: [],
     lastDraft: null,
+    assistantDrafts: [],
     tasks: defaultTasks,
     messages: [{
       sender: "School Coordinator",
@@ -925,8 +926,21 @@
       state.attendance = saved.attendance || {};
       state.meals = saved.meals || {};
       state.notices = Array.isArray(saved.notices) ? saved.notices : [];
+      state.lastDraft = saved.lastDraft || null;
+      state.assistantDrafts = Array.isArray(saved.assistantDrafts) ? saved.assistantDrafts : [];
+      // Migrate the previous single-draft format into the new title list.
+      if (state.lastDraft && !state.assistantDrafts.some(d => d.id && d.id === state.lastDraft.id)) {
+        if (!state.lastDraft.id) state.lastDraft.id = `DRAFT-${state.lastDraft.createdAt || Date.now()}`;
+        state.assistantDrafts.unshift({
+          id: state.lastDraft.id, topic: state.lastDraft.topic || "School Notice",
+          kind: state.lastDraft.kind || "notice", createdAt: state.lastDraft.createdAt,
+          expiresAt: state.lastDraft.expiresAt, published: !!state.lastDraft.published,
+          noticeId: state.lastDraft.noticeId || null
+        });
+      }
       state.tasks = saved.tasks || defaultTasks.map(task => ({ ...task }));
       state.messages = saved.messages || state.messages;
+      cleanupExpiredDrafts(false);
     } catch (error) {
       console.warn("Could not load demo data.", error);
     }
@@ -938,6 +952,8 @@
         attendance: state.attendance,
         meals: state.meals,
         notices: state.notices,
+        lastDraft: state.lastDraft,
+        assistantDrafts: state.assistantDrafts,
         tasks: state.tasks,
         messages: state.messages
       }));
@@ -946,6 +962,77 @@
       showToast("Could not save data in this browser.");
       return false;
     }
+  }
+
+  // Each assistant draft and its linked Parent School Notice expire 24 hours after creation.
+  function cleanupExpiredDrafts(shouldSave = true) {
+    const now = Date.now();
+    let changed = false;
+    const drafts = Array.isArray(state.assistantDrafts) ? state.assistantDrafts : [];
+    const expired = drafts.filter(d => d.expiresAt && new Date(d.expiresAt).getTime() <= now);
+    if (expired.length) {
+      const expiredIds = new Set(expired.map(d => String(d.id)));
+      const noticeIds = new Set(expired.map(d => d.noticeId).filter(Boolean).map(String));
+      if (state.lastDraft && expiredIds.has(String(state.lastDraft.id))) state.lastDraft = null;
+      state.assistantDrafts = drafts.filter(d => !expiredIds.has(String(d.id)));
+      if (noticeIds.size) state.notices = state.notices.filter(n => !noticeIds.has(String(n.id)));
+      changed = true;
+    }
+    if (state.lastDraft?.expiresAt && new Date(state.lastDraft.expiresAt).getTime() <= now) {
+      const linkedNoticeId = state.lastDraft.noticeId;
+      if (linkedNoticeId) state.notices = state.notices.filter(n => String(n.id) !== String(linkedNoticeId));
+      state.assistantDrafts = state.assistantDrafts.filter(d => String(d.id) !== String(state.lastDraft.id));
+      state.lastDraft = null;
+      changed = true;
+    }
+    const previousCount = state.notices.length;
+    state.notices = state.notices.filter(notice => {
+      const expiry = notice.expiresAt || (notice.createdAt ? new Date(new Date(notice.createdAt).getTime() + 24 * 60 * 60 * 1000).toISOString() : null);
+      return !expiry || new Date(expiry).getTime() > now;
+    });
+    if (state.notices.length !== previousCount) changed = true;
+    if (changed && shouldSave) saveData();
+    return changed;
+  }
+
+  function renderAssistantDraftCards() {
+    const drafts = (state.assistantDrafts || []).filter(d => !d.expiresAt || new Date(d.expiresAt).getTime() > Date.now());
+    if (!drafts.length) return `<div class="empty-state assistant-empty-state"><p class="muted">No drafts yet. Your created draft titles will appear here for 24 hours.</p></div>`;
+    return `<div class="assistant-draft-list">${drafts.map(draft => {
+      const expiryText = draft.expiresAt ? new Date(draft.expiresAt).toLocaleString() : "24 hours after creation";
+      return `<article class="assistant-draft-card">
+        <div class="assistant-draft-card-info"><h4>${escapeHTML(draft.topic || "Untitled Draft")}</h4>
+          <p class="muted small">${draft.published ? "Published to Parent Dashboard" : "Draft"} · Auto-deletes: ${escapeHTML(expiryText)}</p>
+        </div>
+        <button type="button" class="btn danger assistant-delete-saved-draft" data-draft-id="${escapeHTML(String(draft.id))}">Delete Draft</button>
+      </article>`;
+    }).join("")}</div>`;
+  }
+
+  function cleanupExpiredDrafts(shouldSave = true) {
+    const now = Date.now();
+    let changed = false;
+
+    if (state.lastDraft?.expiresAt && new Date(state.lastDraft.expiresAt).getTime() <= now) {
+      const linkedNoticeId = state.lastDraft.noticeId;
+      if (linkedNoticeId) {
+        const before = state.notices.length;
+        state.notices = state.notices.filter(notice => String(notice.id) !== String(linkedNoticeId));
+        changed = changed || before !== state.notices.length;
+      }
+      state.lastDraft = null;
+      changed = true;
+    }
+
+    const previousCount = state.notices.length;
+    state.notices = state.notices.filter(notice => {
+      const expiry = notice.expiresAt || (notice.createdAt ? new Date(new Date(notice.createdAt).getTime() + 24 * 60 * 60 * 1000).toISOString() : null);
+      return !expiry || new Date(expiry).getTime() > now;
+    });
+    if (state.notices.length !== previousCount) changed = true;
+
+    if (changed && shouldSave) saveData();
+    return changed;
   }
 
   function readJSON(key, fallback) {
@@ -1758,73 +1845,90 @@
   }
     // ---------- SMART ASSISTANT ----------
 
-  function renderAssistant() {
-    return `
-      <section class="panel assistant-panel">
-        <h2>✨ Smart Assistant</h2>
-        <p class="muted">
-          Create school notices, parent messages and other school-related drafts.
-        </p>
+ function renderAssistant() {
+  return `
+    <section class="panel assistant-panel">
+      <h2>✨ Smart Assistant</h2>
+      <p class="muted">
+        Create school notices, parent messages and other school-related drafts.
+      </p>
 
-        <form id="assistantForm" class="form-grid">
-          <label>
-            Draft Type
-            <select name="kind">
-              <option value="notice">School Notice</option>
-              <option value="parent">Parent Message</option>
-              <option value="meeting">Meeting Summary</option>
-              <option value="leave">Leave Application</option>
-              <option value="announcement">School Announcement</option>
-            </select>
-          </label>
+      <form id="assistantForm" class="form-grid">
+        <label>
+          Draft Type
+          <select name="kind">
+            <option value="notice">School Notice</option>
+            <option value="parent">Parent Message</option>
+            <option value="meeting">Meeting Summary</option>
+            <option value="leave">Leave Application</option>
+            <option value="announcement">School Announcement</option>
+          </select>
+        </label>
 
-          <label>
-            Language
-            <select name="language">
-              <option value="en" ${state.language === "en" ? "selected" : ""}>English</option>
-              <option value="gu" ${state.language === "gu" ? "selected" : ""}>Gujarati</option>
-              <option value="hi" ${state.language === "hi" ? "selected" : ""}>Hindi</option>
-            </select>
-          </label>
+        <label>
+          Language
+          <select name="language">
+            <option value="en" ${state.language === "en" ? "selected" : ""}>English</option>
+            <option value="gu" ${state.language === "gu" ? "selected" : ""}>Gujarati</option>
+            <option value="hi" ${state.language === "hi" ? "selected" : ""}>Hindi</option>
+          </select>
+        </label>
 
-          <label class="full-width">
-            Topic
-            <input
-              name="topic"
-              type="text"
-              required
-              maxlength="200"
-              placeholder="e.g. Parent-teacher meeting"
-            >
-          </label>
+        <label class="full-width">
+          Topic
+          <input
+            name="topic"
+            type="text"
+            required
+            maxlength="200"
+            placeholder="e.g. Parent-teacher meeting"
+          >
+        </label>
 
-          <label class="full-width">
-            Additional Details
-            <textarea
-              name="details"
-              rows="4"
-              maxlength="2000"
-              placeholder="Enter date, time, class and other important details..."
-            ></textarea>
-          </label>
+        <label class="full-width">
+          Additional Details
+          <textarea
+            name="details"
+            rows="4"
+            maxlength="2000"
+            placeholder="Enter date, time, class and other important details..."
+          ></textarea>
+        </label>
 
-          <div class="panel-actions full-width">
-            <button type="submit" class="btn btn-primary">
-              ✨ Create Draft
-            </button>
-          </div>
-        </form>
+        <div class="panel-actions full-width">
+          <button type="submit" class="btn btn-primary">
+            ✨ Create Draft
+          </button>
+        </div>
+      </form>
 
-        <p class="muted full-width">Draft template follows the selected language. Common school topics and complete phrases are translated offline; custom details may stay as entered.</p>
+      <p class="muted full-width">
+        Draft template follows the selected language.
+      </p>
 
-        <div id="assistantResult"></div>
-
-        <p class="muted">
-          Review the draft before sending or publishing it.
-        </p>
+      <section class="assistant-result assistant-drafts-panel">
+        <div class="panel-header"><div><h3>My Created Drafts</h3><p class="muted">Each title stays here until deleted or 24 hours after creation.</p></div></div>
+        <div id="assistantDraftCards">${renderAssistantDraftCards()}</div>
       </section>
-    `;
-  }
+
+      <div id="assistantResult">${state.lastDraft && state.lastDraft.expiresAt && new Date(state.lastDraft.expiresAt).getTime() > Date.now() ? `
+        <section class="assistant-result">
+          <div class="panel-header"><div><h3>${state.lastDraft.published ? "Published Draft" : "Draft — Please Review"}</h3><p class="muted">This draft and its linked parent notice are automatically deleted 24 hours after creation.</p></div></div>
+          <textarea id="draftText" rows="12" maxlength="10000" aria-label="Draft text">${escapeHTML(state.lastDraft.body || "")}</textarea>
+          <div class="panel-actions">
+            <button type="button" class="btn btn-secondary" id="copyDraft">Copy Draft</button>
+            <button type="button" class="btn btn-secondary" id="downloadDraft">Download Draft</button>
+            <button type="button" class="btn btn-primary" id="publishDraft" ${state.lastDraft.published ? "disabled" : ""}>${state.lastDraft.published ? "Published to Parent Notice ✓" : "Publish to Parent Notice"}</button>
+          </div>
+          <p id="publishDraftStatus" class="muted small" role="status">${state.lastDraft.published ? "Published to Parent School Notice." : ""}</p>
+        </section>` : ""}</div>
+
+      <p class="muted">
+        Review the draft before publishing it.
+      </p>
+    </section>
+  `;
+}
 
   function makeDraft(kind, topic, details, language = state.language || "en") {
     const lang = ["en", "gu", "hi"].includes(language) ? language : "en";
@@ -2798,9 +2902,14 @@
   // ---------- PARENT PORTAL ----------
   function renderParentDashboard() {
     const child = state.teacher?.child || { name: "Aarav Patel", className: "Class 5A", roll: "1" };
-    const notices = (Array.isArray(state.notices) ? state.notices : [])
-      .slice()
-      .sort((a, b) => new Date(b.publishedAt || 0).getTime() - new Date(a.publishedAt || 0).getTime());
+
+const notices = (Array.isArray(state.notices) ? state.notices : [])
+  .slice()
+  .sort((a, b) =>
+    new Date(b.publishedAt || 0).getTime() -
+    new Date(a.publishedAt || 0).getTime()
+  );
+
     const locale = state.language === "gu" ? "gu-IN" : state.language === "hi" ? "hi-IN" : "en-IN";
     const noticeMarkup = notices.length
       ? `<div class="parent-published-notices">${notices.map(notice => {
@@ -2904,32 +3013,86 @@
     };
   }
 
-  function renderParentAttendance() {
-    const child = state.teacher?.child || {};
-    const summary = getParentAttendanceSummary(state.teacher);
-    const percentText = summary.percentage === null ? "—" : `${summary.percentage}%`;
-    const progressWidth = summary.percentage === null ? 0 : Math.max(0, Math.min(100, summary.percentage));
-    const recordedText = summary.totalRecordedDays
-      ? `Out of ${summary.totalRecordedDays} days with attendance recorded`
-      : "No attendance has been recorded by the teacher yet.";
-    return `<section class="panel parent-attendance-panel">
-        <h2>${escapeHTML(child.name || "Your Child")} — Attendance</h2>
-        <p class="muted">Attendance summary calculated from the teacher's saved attendance register.</p>
-        <div class="stats-grid parent-attendance-stats">
-          <article class="stat-card">
-            <span class="stat-label">Attendance Percentage</span>
-            <strong class="stat-value">${percentText}</strong>
-            <div class="parent-attendance-track" aria-label="Attendance ${percentText}"><span style="width:${progressWidth}%"></span></div>
-          </article>
-          <article class="stat-card">
-            <span class="stat-label">Total Present Days</span>
-            <strong class="stat-value">${summary.presentDays}</strong>
-            <span class="muted">${escapeHTML(recordedText)}</span>
-          </article>
-        </div>
-        <p class="muted small">Only dates marked Present or Absent in the teacher's register are counted.</p>
-      </section>`;
-  }
+
+function renderParentAttendance() {
+  const child = state.teacher?.child || {};
+  const summary = getParentAttendanceSummary(state.teacher);
+
+  const percentText =
+    summary.percentage === null ? "—" : `${summary.percentage}%`;
+
+  const progressWidth =
+    summary.percentage === null
+      ? 0
+      : Math.max(0, Math.min(100, summary.percentage));
+
+  const recordedText = summary.totalRecordedDays
+    ? `Out of ${summary.totalRecordedDays} days with attendance recorded`
+    : "No attendance has been recorded by the teacher yet.";
+
+  // Show the highlighted warning only when attendance is below 75%.
+  const attendanceWarning =
+    summary.percentage !== null && summary.percentage < 75
+      ? `
+        <article class="parent-attendance-warning" role="alert">
+          <div class="attendance-warning-icon">!</div>
+          <div>
+            <h3>Attendance Needs Improvement</h3>
+            <p>
+              Your child's attendance is currently
+              <strong>${summary.percentage}%</strong>, which is below
+              the required 75%.
+            </p>
+            <p>
+              Regular school attendance helps children learn better,
+              participate in classroom activities, and stay on track
+              with their studies. Please encourage your child to attend
+              school every day.
+            </p>
+            <strong class="attendance-warning-footer">
+              “Be present. Keep learning. Dream big. Every school day matters!”
+            </strong>
+          </div>
+        </article>
+      `
+      : "";
+
+  return `
+    <section class="panel parent-attendance-panel">
+      <h2>${escapeHTML(child.name || "Your Child")} — Attendance</h2>
+
+      <p class="muted">
+        Attendance summary calculated from the teacher's saved attendance register.
+      </p>
+
+      <div class="stats-grid parent-attendance-stats">
+        <article class="stat-card">
+          <span class="stat-label">Attendance Percentage</span>
+          <strong class="stat-value">${percentText}</strong>
+          <div
+            class="parent-attendance-track"
+            aria-label="Attendance ${percentText}"
+          >
+            <span style="width:${progressWidth}%"></span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Total Present Days</span>
+          <strong class="stat-value">${summary.presentDays}</strong>
+          <span class="muted">${escapeHTML(recordedText)}</span>
+        </article>
+      </div>
+
+      ${attendanceWarning}
+
+      <p class="muted small">
+        Only dates marked Present or Absent in the teacher's register are counted.
+      </p>
+    </section>
+  `;
+}
+
 
   function renderParentChat() {
     // Reuse the existing chat form, but label it for the parent portal.
@@ -3347,6 +3510,73 @@
         return;
       }
 
+      const savedDraftDeleteButton = target.closest(".assistant-delete-saved-draft");
+      if (savedDraftDeleteButton) {
+        const draftId = savedDraftDeleteButton.dataset.draftId;
+        const entry = (state.assistantDrafts || []).find(d => String(d.id) === String(draftId));
+        if (!entry) return;
+        const previousDrafts = state.assistantDrafts.slice();
+        const previousNotices = state.notices.slice();
+        const previousLastDraft = state.lastDraft;
+        state.assistantDrafts = state.assistantDrafts.filter(d => String(d.id) !== String(draftId));
+        if (entry.noticeId) state.notices = state.notices.filter(n => String(n.id) !== String(entry.noticeId));
+        if (state.lastDraft && String(state.lastDraft.id) === String(draftId)) state.lastDraft = null;
+        if (!saveData()) {
+          state.assistantDrafts = previousDrafts; state.notices = previousNotices; state.lastDraft = previousLastDraft;
+          return;
+        }
+        const cards = document.getElementById("assistantDraftCards");
+        if (cards) cards.innerHTML = renderAssistantDraftCards();
+        const result = document.getElementById("assistantResult");
+        if (previousLastDraft && String(previousLastDraft.id) === String(draftId) && result) result.innerHTML = "";
+        showToast(entry.noticeId ? "Draft and Parent School Notice deleted." : "Draft deleted.");
+        return;
+      }
+
+      if (target.closest("#deleteDraft")) {
+        const draftToDelete = state.lastDraft;
+        if (!draftToDelete) {
+          showToast("There is no draft to delete.");
+          return;
+        }
+
+        const previousNotices = Array.isArray(state.notices) ? state.notices.slice() : [];
+        const linkedNoticeId = draftToDelete.noticeId;
+
+        // Remove the matching Parent School Notice as well, if this draft was published.
+        if (linkedNoticeId) {
+          state.notices = previousNotices.filter(
+            notice => String(notice.id) !== String(linkedNoticeId)
+          );
+        }
+
+        state.assistantDrafts = (state.assistantDrafts || []).filter(d => String(d.id) !== String(draftToDelete.id));
+        state.lastDraft = null;
+        if (!saveData()) {
+          state.notices = previousNotices;
+          state.lastDraft = draftToDelete;
+          if (!state.assistantDrafts.some(d => String(d.id) === String(draftToDelete.id))) state.assistantDrafts.unshift({ id: draftToDelete.id, topic: draftToDelete.topic, kind: draftToDelete.kind, createdAt: draftToDelete.createdAt, expiresAt: draftToDelete.expiresAt, published: draftToDelete.published, noticeId: draftToDelete.noticeId });
+          return;
+        }
+
+        const cards = document.getElementById("assistantDraftCards");
+        if (cards) cards.innerHTML = renderAssistantDraftCards();
+        const result = document.getElementById("assistantResult");
+        if (result) {
+          result.innerHTML = `
+            <div class="empty-state assistant-empty-state">
+              <h3>No draft created yet.</h3>
+              <p class="muted small">Create a draft to preview it here.</p>
+            </div>
+          `;
+        }
+
+        showToast(linkedNoticeId
+          ? "Draft and Parent School Notice deleted."
+          : "Draft deleted.");
+        return;
+      }
+
       if (target.closest("#publishDraft")) {
         if (state.userType !== "teacher" || !state.teacher) {
           showToast("Only a teacher can publish a school notice.");
@@ -3379,6 +3609,8 @@
           body: draftBody,
           author: state.teacher.name,
           authorId: state.teacher.id,
+          createdAt: state.lastDraft?.createdAt || new Date().toISOString(),
+          expiresAt: state.lastDraft?.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           publishedAt: new Date().toISOString()
         };
         state.notices = Array.isArray(state.notices) ? state.notices : [];
@@ -3387,7 +3619,17 @@
           state.notices.shift();
           return;
         }
-        if (state.lastDraft) state.lastDraft.published = true;
+        if (state.lastDraft) {
+          state.lastDraft.published = true;
+          state.lastDraft.body = draftBody;
+          state.lastDraft.noticeId = newNotice.id;
+          state.lastDraft.expiresAt = state.lastDraft.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+          const historyEntry = state.assistantDrafts.find(d => String(d.id) === String(state.lastDraft.id));
+          if (historyEntry) { historyEntry.published = true; historyEntry.noticeId = newNotice.id; }
+          saveData();
+          const cards = document.getElementById("assistantDraftCards");
+          if (cards) cards.innerHTML = renderAssistantDraftCards();
+        }
         const publishButton = target.closest("#publishDraft");
         publishButton.disabled = true;
         publishButton.textContent = "Published to Parent Notice ✓";
@@ -3448,38 +3690,117 @@
       const form = event.target;
       if (!(form instanceof HTMLFormElement)) return;
 
+      if (form.id === "assistantForm") {
+        event.preventDefault();
+
+        if (state.userType !== "teacher" || !state.teacher) {
+          showToast("Only a teacher can create a draft.");
+          return;
+        }
+
+        const formData = new FormData(form);
+        const kind = String(formData.get("kind") || "notice");
+        const language = String(formData.get("language") || state.language || "en");
+        const topic = String(formData.get("topic") || "").trim();
+        const details = String(formData.get("details") || "").trim();
+
+        if (!topic) {
+          showToast("Please enter a topic.");
+          form.querySelector('[name="topic"]')?.focus();
+          return;
+        }
+
+        const draftBody = makeDraft(kind, topic, details, language);
+        const createdAt = new Date().toISOString();
+        const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        const draftId = `DRAFT-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        state.lastDraft = { id: draftId, kind, topic, language, body: draftBody, createdAt, expiresAt, published: false, noticeId: null };
+        state.assistantDrafts = Array.isArray(state.assistantDrafts) ? state.assistantDrafts : [];
+        state.assistantDrafts.unshift({ id: draftId, kind, topic, createdAt, expiresAt, published: false, noticeId: null });
+        saveData();
+        const cards = document.getElementById("assistantDraftCards");
+        if (cards) cards.innerHTML = renderAssistantDraftCards();
+
+        const result = document.getElementById("assistantResult");
+        if (result) {
+          const autoPublished = kind === "notice" || kind === "announcement";
+          result.innerHTML = `
+            <section class="assistant-result">
+              <div class="panel-header">
+                <div>
+                  <h3>Draft — Please Review</h3>
+                  <p class="muted">Review or edit the draft before using it.</p>
+                </div>
+              </div>
+              <textarea id="draftText" rows="12" maxlength="10000" aria-label="Draft text">${escapeHTML(draftBody)}</textarea>
+              <div class="panel-actions">
+                <button type="button" class="btn btn-secondary" id="copyDraft">Copy Draft</button>
+                <button type="button" class="btn btn-secondary" id="downloadDraft">Download Draft</button>
+                    <button type="button" class="btn btn-primary" id="publishDraft" ${autoPublished ? "disabled" : ""}>${autoPublished ? "Publishing..." : "Publish to Parent Notice"}</button>
+              </div>
+              <p id="publishDraftStatus" class="muted small" role="status"></p>
+            </section>
+          `;
+        }
+
+        // Publish notices and announcements to the Parent Dashboard automatically.
+        if (kind === "notice" || kind === "announcement") {
+          const newNotice = {
+            id: `NOTICE-${Date.now()}`,
+            title: topic,
+            kind,
+            language,
+            body: draftBody,
+            author: state.teacher.name || "School Teacher",
+            authorId: state.teacher.id,
+            createdAt,
+            expiresAt,
+            publishedAt: new Date().toISOString()
+          };
+
+          state.notices = Array.isArray(state.notices) ? state.notices : [];
+          state.notices.unshift(newNotice);
+          state.lastDraft.noticeId = newNotice.id;
+          const historyEntry = state.assistantDrafts.find(d => String(d.id) === String(state.lastDraft.id));
+          if (historyEntry) { historyEntry.noticeId = newNotice.id; historyEntry.published = true; }
+
+          if (saveData()) {
+            state.lastDraft.published = true;
+            state.lastDraft.body = draftBody;
+            saveData();
+            const cards = document.getElementById("assistantDraftCards");
+            if (cards) cards.innerHTML = renderAssistantDraftCards();
+            const publishButton = document.getElementById("publishDraft");
+            if (publishButton) {
+              publishButton.disabled = true;
+              publishButton.textContent = "Published to Parent Notice ✓";
+            }
+            const status = document.getElementById("publishDraftStatus");
+            if (status) status.textContent = "Published to Parent School Notice.";
+            showToast("Draft created and added to Parent School Notice.");
+          } else {
+            state.notices.shift();
+            state.lastDraft.noticeId = null;
+            const publishButton = document.getElementById("publishDraft");
+            if (publishButton) {
+              publishButton.disabled = false;
+              publishButton.textContent = "Publish to Parent Notice";
+            }
+            const status = document.getElementById("publishDraftStatus");
+            if (status) status.textContent = "Draft created, but it could not be saved to Parent School Notice. Try publishing again.";
+            showToast("Draft created, but the notice could not be saved.");
+          }
+        } else {
+          showToast("Draft created. Review it before publishing.");
+        }
+        return;
+      }
+
       if (form.id === "mealForm") {
         event.preventDefault();
         saveMeal(form);
       }
 
-      if (form.id === "assistantForm") {
-        event.preventDefault();
-
-        const data = new FormData(form);
-        const kind = String(data.get("kind") || "notice");
-        const topic = String(data.get("topic") || "").trim();
-        const language = String(data.get("language") || state.language || "en");
-        const draft = makeDraft(
-          kind,
-          topic,
-          String(data.get("details") || ""),
-          language
-        );
-        state.lastDraft = { kind, topic, language, generatedAt: new Date().toISOString(), published: false };
-
-        $("#assistantResult").innerHTML = `
-          <section class="panel assistant-result">
-            <div class="panel-header"><h3>Draft — Please Review</h3></div>
-            <textarea id="draftText" rows="14">${escapeHTML(draft)}</textarea>
-            <div class="panel-actions">
-              <button type="button" class="btn btn-primary" id="copyDraft">Copy Draft</button>
-              <button type="button" class="btn btn-secondary" id="downloadDraft">Download Draft</button>
-              <button type="button" class="btn btn-primary" id="publishDraft">Publish to Parent School Notice</button>
-            </div>
-            <p class="muted small" id="publishDraftStatus">Review the draft and publish it to display it on the Parent Dashboard's School Notice section.</p>
-          </section>`;
-      }
 
       if (form.id === "chatForm") {
         event.preventDefault();
@@ -3516,6 +3837,9 @@
 
   function init() {
     loadSavedData();
+    cleanupExpiredDrafts(true);
+    window.setInterval(() => cleanupExpiredDrafts(true), 60 * 1000);
+    window.addEventListener("focus", () => cleanupExpiredDrafts(true));
     try {
       const savedLanguage = localStorage.getItem("shikshasetu_language");
       if (["en", "gu", "hi"].includes(savedLanguage)) state.language = savedLanguage;

@@ -4824,3 +4824,68 @@ button[title*="Download CSV"]:hover {
   #syncStatus { display: none; }
   .top-actions { gap: 5px; }
 }
+
+/* Parent attendance warning card */
+.parent-attendance-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin: 22px 0;
+  padding: 22px;
+  background: #fff3e8;
+  border: 1px solid #edb77c;
+  border-left: 6px solid #c66b25;
+  border-radius: 14px;
+  color: #703b1c;
+  box-shadow: 0 5px 16px rgba(112, 59, 28, 0.08);
+}
+
+.attendance-warning-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #c66b25;
+  color: #ffffff;
+  font-size: 23px;
+  font-weight: 800;
+}
+
+.parent-attendance-warning h3 {
+  margin: 2px 0 12px;
+  color: #8a421c;
+  font-size: 19px;
+}
+
+.parent-attendance-warning p {
+  margin: 0 0 12px;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+.attendance-warning-footer {
+  display: block;
+  margin-top: 14px;
+  color: #8a421c;
+  line-height: 1.6;
+}
+
+@media (max-width: 480px) {
+  .parent-attendance-warning {
+    gap: 11px;
+    padding: 15px;
+  }
+
+  .attendance-warning-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 19px;
+  }
+
+  .parent-attendance-warning h3 {
+    font-size: 16px;
+  }
+}
