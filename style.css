@@ -4889,3 +4889,72 @@ button[title*="Download CSV"]:hover {
     font-size: 16px;
   }
 }
+
+
+/* ---------- Parent Holiday List: ShikshaSetu maroon + warm-grey theme ---------- */
+.parent-holiday-page { display: grid; gap: 18px; }
+.holiday-hero {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  padding: 21px 24px; border: 1px solid #e5d6d0; border-radius: 18px;
+  background: linear-gradient(112deg, #fffdfc 0%, #f7eae6 100%);
+  box-shadow: 0 5px 18px rgba(80, 39, 32, .055);
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+}
+.holiday-hero:hover { transform: translateY(-3px); border-color: #bd8e84; box-shadow: 0 11px 24px rgba(80, 39, 32, .10); }
+.holiday-hero-main { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.holiday-emblem {
+  flex: 0 0 auto; width: 66px; height: 66px; display: grid; place-items: center;
+  border-radius: 19px; background: linear-gradient(145deg, #f0ddd7, #fff9f6);
+  border: 1px solid #ead3cb; color: #762722; font-size: 36px; font-weight: 800;
+  transition: transform .22s ease, background .22s ease;
+}
+.holiday-hero:hover .holiday-emblem { transform: rotate(-4deg) scale(1.04); background: #f1dfd9; }
+.holiday-hero-copy { min-width: 0; }
+.holiday-school-name { margin: 0 0 2px; color: #8e3b34; font-size: 14px; font-weight: 800; letter-spacing: .03em; }
+.holiday-hero h2 { margin: 0; color: #4a211f; font-size: clamp(21px, 2.2vw, 29px); letter-spacing: -.45px; line-height: 1.25; }
+.holiday-academic-year { margin: 6px 0 0; color: #817773; font-size: 13px; }
+.holiday-calendar-tag {
+  display: inline-flex; flex: 0 0 auto; align-items: center; gap: 9px; padding: 10px 14px;
+  border: 1px solid #e6d1ca; border-radius: 999px; background: #fff9f7; color: #762722;
+  font-size: 12px; font-weight: 800; white-space: nowrap; transition: .2s ease;
+}
+.holiday-calendar-tag:hover { transform: translateY(-2px); background: #f2e2dd; box-shadow: 0 5px 12px #70252214; }
+.holiday-calendar-symbol { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; background: #f0dfd9; font-size: 17px; }
+.holiday-list-panel { padding: 22px; border-color: #e7dcd7; }
+.holiday-list-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 0 0 17px; }
+.holiday-list-header h3 { color: #642622; font-size: 20px; margin: 0 0 5px; }
+.holiday-list-header p { margin: 0; font-size: 13px; line-height: 1.5; }
+.holiday-count { display: inline-flex; align-items: center; flex: 0 0 auto; padding: 8px 12px; border-radius: 999px; background: #f4e4df; color: #762722; font-size: 12px; font-weight: 800; border: 1px solid #ead0c9; }
+.holiday-table-wrap { width: 100%; overflow: auto; border: 1px solid #eadfda; border-radius: 13px; background: #fff; }
+.holiday-table { width: 100%; min-width: 660px; border-collapse: separate; border-spacing: 0; }
+.holiday-table thead th { padding: 13px 15px; background: linear-gradient(100deg, #762722, #923b34); color: #fff; border: 0; font-size: 11px; font-weight: 800; letter-spacing: .055em; text-transform: uppercase; white-space: nowrap; }
+.holiday-table thead th:first-child { border-top-left-radius: 11px; }
+.holiday-table thead th:last-child { border-top-right-radius: 11px; }
+.holiday-table tbody td { padding: 11px 15px; color: #493a36; border-bottom: 1px solid #efe5e1; font-size: 12px; line-height: 1.45; transition: background .18s ease, color .18s ease; }
+.holiday-table tbody tr:last-child td { border-bottom: 0; }
+.holiday-table tbody tr:nth-child(even) td { background: #fffdfc; }
+.holiday-table tbody tr:hover td { background: #f8eeeb; color: #5e2723; }
+.holiday-month-cell { width: 18%; min-width: 130px; background: #f6e9e5 !important; border-right: 1px solid #ecdad4; vertical-align: middle; }
+.holiday-month-cell span { color: #6c2a25; font-size: 14px; font-weight: 800; letter-spacing: .1px; }
+.holiday-date-cell { min-width: 180px; color: #68544d !important; white-space: nowrap; }
+.holiday-name-cell { min-width: 190px; font-weight: 650; }
+.holiday-type { display: inline-flex; align-items: center; justify-content: center; min-width: 76px; padding: 5px 10px; border-radius: 999px; font-size: 10px; line-height: 1.25; font-weight: 800; white-space: nowrap; transition: transform .18s ease, box-shadow .18s ease; }
+.holiday-table tbody tr:hover .holiday-type { transform: scale(1.04); box-shadow: 0 2px 7px rgba(80, 39, 32, .08); }
+.holiday-type-religious { background: #eee5f2; color: #6d4a7a; }
+.holiday-type-festival { background: #fff0dc; color: #96601c; }
+.holiday-type-national { background: #e6f0e4; color: #456a42; }
+.holiday-type-vacation { background: #e5edf7; color: #45668b; }
+.holiday-note { margin: 13px 2px 0; color: #8a7770; font-size: 11px; line-height: 1.5; }
+@media (max-width: 760px) {
+  .holiday-hero { align-items: flex-start; flex-direction: column; padding: 18px; }
+  .holiday-emblem { width: 56px; height: 56px; border-radius: 16px; font-size: 30px; }
+  .holiday-calendar-tag { align-self: flex-start; }
+  .holiday-list-panel { padding: 15px; }
+  .holiday-list-header { align-items: flex-start; flex-direction: column; }
+}
+@media (max-width: 480px) {
+  .holiday-hero-main { align-items: flex-start; gap: 12px; }
+  .holiday-hero h2 { font-size: 21px; }
+  .holiday-school-name { font-size: 12px; }
+  .holiday-academic-year { font-size: 12px; }
+}

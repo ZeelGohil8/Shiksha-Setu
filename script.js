@@ -695,6 +695,54 @@
     "Please bring the student ID card.": ["કૃપા કરીને વિદ્યાર્થીનું ID કાર્ડ લાવશો.", "कृपया विद्यार्थी का ID कार्ड लाएँ।"]
   });
 
+  Object.assign(UI_TRANSLATIONS, {
+    "Holiday List": ["રજાઓની યાદી", "छुट्टियों की सूची"],
+    "Student Holiday List": ["વિદ્યાર્થી રજાઓની યાદી", "विद्यार्थी छुट्टियों की सूची"],
+    "Government School": ["સરકારી શાળા", "सरकारी स्कूल"],
+    "Academic Year 2026 - 27": ["શૈક્ષણિક વર્ષ ૨૦૨૬ - ૨૭", "शैक्षणिक वर्ष २०२६ - २७"],
+    "Holiday Calendar": ["રજાઓનું કેલેન્ડર", "छुट्टियों का कैलेंडर"],
+    "School Holidays": ["શાળાની રજાઓ", "स्कूल की छुट्टियाँ"],
+    "Festivals, national holidays and vacation dates": ["તહેવારો, રાષ્ટ્રીય રજાઓ અને વેકેશનની તારીખો", "त्योहार, राष्ट्रीय छुट्टियाँ और अवकाश की तारीखें"],
+    "Month": ["મહિનો", "महीना"],
+    "Date / Date Range": ["તારીખ / તારીખની શ્રેણી", "तारीख / तारीख की अवधि"],
+    "Holiday Name": ["રજાનું નામ", "छुट्टी का नाम"],
+    "Type": ["પ્રકાર", "प्रकार"],
+    "Religious": ["ધાર્મિક", "धार्मिक"],
+    "Festival": ["તહેવાર", "त्योहार"],
+    "National": ["રાષ્ટ્રીય", "राष्ट्रीय"],
+    "Vacation": ["વેકેશન", "अवकाश"],
+    "Bakri Eid": ["બકરી ઈદ", "बकरी ईद"],
+    "Rath Yatra": ["રથયાત્રા", "रथ यात्रा"],
+    "Id-ul-Zuha (Bakrid)": ["ઈદ-ઉલ-ઝુહા (બકરીદ)", "ईद-उल-जुहा (बकरीद)"],
+    "Independence Day": ["સ્વતંત્રતા દિવસ", "स्वतंत्रता दिवस"],
+    "Raksha Bandhan": ["રક્ષાબંધન", "रक्षाबंधन"],
+    "Janmashtami": ["જન્માષ્ટમી", "जन्माष्टमी"],
+    "Gandhi Jayanti": ["ગાંધી જયંતિ", "गांधी जयंती"],
+    "Diwali (Holiday begins)": ["દિવાળી (રજાની શરૂઆત)", "दिवाली (छुट्टी शुरू)"],
+    "Diwali Vacation Starts": ["દિવાળી વેકેશન શરૂ", "दिवाली की छुट्टियाँ शुरू"],
+    "Diwali Vacation Ends": ["દિવાળી વેકેશન પૂર્ણ", "दिवाली की छुट्टियाँ समाप्त"],
+    "Christmas": ["ક્રિસમસ", "क्रिसमस"],
+    "Republic Day": ["પ્રજાસત્તાક દિવસ", "गणतंत्र दिवस"],
+    "Maha Shivratri": ["મહાશિવરાત્રી", "महाशिवरात्रि"],
+    "Holi": ["હોળી", "होली"],
+    "Good Friday": ["ગુડ ફ્રાઇડે", "गुड फ्राइडे"],
+    "Summer Vacation Starts": ["ઉનાળુ વેકેશન શરૂ", "गर्मी की छुट्टियाँ शुरू"],
+    "Summer Vacation Ends": ["ઉનાળુ વેકેશન પૂર્ણ", "गर्मी की छुट्टियाँ समाप्त"],
+    "June 2026": ["જૂન ૨૦૨૬", "जून २०२६"],
+    "July 2026": ["જુલાઈ ૨૦૨૬", "जुलाई २०२६"],
+    "August 2026": ["ઑગસ્ટ ૨૦૨૬", "अगस्त २०२६"],
+    "September 2026": ["સપ્ટેમ્બર ૨૦૨૬", "सितंबर २०२६"],
+    "October 2026": ["ઑક્ટોબર ૨૦૨૬", "अक्टूबर २०२६"],
+    "November 2026": ["નવેમ્બર ૨૦૨૬", "नवंबर २०२६"],
+    "December 2026": ["ડિસેમ્બર ૨૦૨૬", "दिसंबर २०२६"],
+    "January 2027": ["જાન્યુઆરી ૨૦૨૭", "जनवरी २०२७"],
+    "February 2027": ["ફેબ્રુઆરી ૨૦૨૭", "फ़रवरी २०२७"],
+    "March 2027": ["માર્ચ ૨૦૨૭", "मार्च २०२७"],
+    "April 2027": ["એપ્રિલ ૨૦૨૭", "अप्रैल २०२७"],
+    "May 2027": ["મે ૨૦૨૭", "मई २०२७"],
+    "Dates are shown as provided in the sample holiday schedule.": ["તારીખો મોકલેલી નમૂના રજા-યાદી મુજબ દર્શાવવામાં આવી છે.", "तारीखें दिए गए नमूना छुट्टी कार्यक्रम के अनुसार दिखाई गई हैं।"]
+  });
+
   const UI_TRANSLATIONS_BY_LOWER = new Map(
     Object.entries(UI_TRANSLATIONS).map(([key, value]) => [key.toLocaleLowerCase(), value])
   );
@@ -1092,6 +1140,7 @@
           <button type="button" class="nav-btn" data-page="parentDashboard"><span class="ico">⌂</span>Dashboard</button>
           <button type="button" class="nav-btn" data-page="parentAttendance"><span class="ico">✓</span>Attendance</button>
           <button type="button" class="nav-btn" data-page="parentMeals"><span class="ico">♨</span>Midday Meals</button>
+          <button type="button" class="nav-btn" data-page="parentHolidayList"><span class="ico">▦</span>Holiday List</button>
           <button type="button" class="nav-btn" data-page="parentFaculty"><span class="ico">♙</span>Faculty Members</button>
           <button type="button" class="nav-btn" data-page="parentProfile"><span class="ico">◉</span>Child Personal Info</button>
           <button type="button" class="nav-btn" data-page="parentChat"><span class="ico">☏</span>Parent–Teacher Chat</button>
@@ -1163,6 +1212,7 @@
     parentFamilyProfile: ["Parent Profile", "Father's and mother's contact information"],
     parentChat: ["Parent–Teacher Chat", "Contact your child's teacher"],
     parentMeals: ["Meal Menu", "This week's school meal menu"],
+    parentHolidayList: ["Holiday List", "Student holidays and vacation dates for academic year 2026–27"],
     parentFaculty: ["Faculty Members", "Teacher names, subjects and contact numbers"]
   };
 
@@ -3211,13 +3261,86 @@ function renderParentAttendance() {
     return renderWeeklyMealMenu();
   }
 
+  // ---------- PARENT HOLIDAY LIST ----------
+  // This data is styled as a real table, rather than displaying the reference image.
+  const SCHOOL_HOLIDAYS_2026_27 = [
+    { month: "June 2026", date: "13 Jun 2026 (Sat)", name: "Bakri Eid", type: "Religious" },
+    { month: "June 2026", date: "29 Jun 2026 (Mon)", name: "Rath Yatra", type: "Festival" },
+    { month: "July 2026", date: "31 Jul 2026 (Fri)", name: "Id-ul-Zuha (Bakrid)", type: "Religious" },
+    { month: "August 2026", date: "15 Aug 2026 (Sat)", name: "Independence Day", type: "National" },
+    { month: "August 2026", date: "22 Aug 2026 (Sat)", name: "Raksha Bandhan", type: "Festival" },
+    { month: "September 2026", date: "05 Sep 2026 (Sat)", name: "Janmashtami", type: "Religious" },
+    { month: "October 2026", date: "02 Oct 2026 (Fri)", name: "Gandhi Jayanti", type: "National" },
+    { month: "October 2026", date: "20 Oct 2026 (Tue)", name: "Diwali (Holiday begins)", type: "Festival" },
+    { month: "November 2026", date: "21 Nov 2026 (Sat)", name: "Diwali Vacation Starts", type: "Vacation" },
+    { month: "November 2026", date: "30 Nov 2026 (Mon)", name: "Diwali Vacation Ends", type: "Vacation" },
+    { month: "December 2026", date: "25 Dec 2026 (Fri)", name: "Christmas", type: "Religious" },
+    { month: "January 2027", date: "26 Jan 2027 (Tue)", name: "Republic Day", type: "National" },
+    { month: "February 2027", date: "19 Feb 2027 (Fri)", name: "Maha Shivratri", type: "Religious" },
+    { month: "March 2027", date: "11 Mar 2027 (Thu)", name: "Holi", type: "Festival" },
+    { month: "April 2027", date: "02 Apr 2027 (Fri)", name: "Good Friday", type: "Religious" },
+    { month: "May 2027", date: "01 May 2027 (Sat)", name: "Summer Vacation Starts", type: "Vacation" },
+    { month: "May 2027", date: "31 May 2027 (Mon)", name: "Summer Vacation Ends", type: "Vacation" }
+  ];
+
+  function renderParentHolidayList() {
+    const groupedMonths = [];
+    SCHOOL_HOLIDAYS_2026_27.forEach(holiday => {
+      let group = groupedMonths[groupedMonths.length - 1];
+      if (!group || group.month !== holiday.month) {
+        group = { month: holiday.month, items: [] };
+        groupedMonths.push(group);
+      }
+      group.items.push(holiday);
+    });
+
+    const rows = groupedMonths.map(group => group.items.map((holiday, index) => `
+      <tr>
+        ${index === 0 ? `<td class="holiday-month-cell" rowspan="${group.items.length}"><span>${escapeHTML(group.month)}</span></td>` : ""}
+        <td class="holiday-date-cell">${escapeHTML(holiday.date)}</td>
+        <td class="holiday-name-cell">${escapeHTML(holiday.name)}</td>
+        <td><span class="holiday-type holiday-type-${holiday.type.toLowerCase()}">${escapeHTML(holiday.type)}</span></td>
+      </tr>`).join("")).join("");
+
+    return `<div class="parent-holiday-page">
+      <section class="holiday-hero">
+        <div class="holiday-hero-main">
+          <div class="holiday-emblem" aria-hidden="true">🏫</div>
+          <div class="holiday-hero-copy">
+            <p class="holiday-school-name">Government School</p>
+            <h2>Student Holiday List</h2>
+            <p class="holiday-academic-year">Academic Year 2026 - 27</p>
+          </div>
+        </div>
+        <div class="holiday-calendar-tag"><span class="holiday-calendar-symbol" aria-hidden="true">▦</span><span>Holiday Calendar</span></div>
+      </section>
+
+      <section class="panel holiday-list-panel">
+        <div class="panel-header holiday-list-header">
+          <div>
+            <h3>School Holidays</h3>
+            <p class="muted">Festivals, national holidays and vacation dates</p>
+          </div>
+          <span class="holiday-count">${SCHOOL_HOLIDAYS_2026_27.length} Holidays</span>
+        </div>
+        <div class="holiday-table-wrap">
+          <table class="holiday-table" aria-label="Student holiday list for academic year 2026 to 2027">
+            <thead><tr><th>Month</th><th>Date / Date Range</th><th>Holiday Name</th><th>Type</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        <p class="holiday-note">Dates are shown as provided in the sample holiday schedule.</p>
+      </section>
+    </div>`;
+  }
+
   // ---------- PAGE RENDERER ----------
 
   function renderPage(page) {
     if (!state.teacher) return "";
 
     // Keep the parent portal separate from teacher-only sections.
-    const parentPages = ["parentDashboard", "parentAttendance", "parentProfile", "parentFamilyProfile", "parentChat", "parentMeals", "parentFaculty"];
+    const parentPages = ["parentDashboard", "parentAttendance", "parentProfile", "parentFamilyProfile", "parentChat", "parentMeals", "parentHolidayList", "parentFaculty"];
     if (state.userType === "parent" && !parentPages.includes(page)) page = "parentDashboard";
     if (state.userType === "teacher" && parentPages.includes(page)) page = "dashboard";
 
@@ -3237,6 +3360,7 @@ function renderParentAttendance() {
       parentFamilyProfile: renderParentFamilyProfile,
       parentChat: renderParentChat,
       parentMeals: renderParentMeals,
+      parentHolidayList: renderParentHolidayList,
       parentFaculty: renderParentFaculty
     };
 
