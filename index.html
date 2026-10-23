@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShikshaSetu | Smart School Administration</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <section id="loginScreen" class="login-screen">
+    <div class="login-art">
+      <div class="login-brand"><img src="logo.png" alt="" onerror="this.style.display='none'"><span>ShikshaSetu</span>
+      </div>
+      <div class="login-art-copy">
+        <h1>Smarter Schools.<br>Brighter Futures.</h1>
+        <p class="lead">One connected workspace for school administration. Manage classes, attendance, midday meals and
+          reports from one simple dashboard.</p>
+        <div class="feature-list">
+          <div class="feature-item"><span class="feature-icon">✓</span><span>One-time entry for everyday school
+              records</span></div>
+          <div class="feature-item"><span class="feature-icon">✦</span><span>AI-assisted drafts with teacher
+              review</span></div>
+          <div class="feature-item"><span class="feature-icon">↻</span><span>Designed for low-connectivity
+              workflows</span></div>
+        </div>
+      </div>
+      <footer>ShikshaSetu · Connecting Teachers, Parents &amp; Students</footer>
+    </div>
+    <div class="login-panel">
+      <form class="login-box" id="loginForm">
+        <div class="login-brand mobile-login-brand"><img src="logo.png" alt=""
+            onerror="this.style.display='none'"><span>ShikshaSetu</span></div>
+        <div class="language-switcher login-language-switcher">
+          <label for="languageSelectLogin">Language</label>
+          <select id="languageSelectLogin" aria-label="Choose website language">
+            <option value="en">English</option>
+            <option value="gu">ગુજરાતી</option>
+            <option value="hi">हिंदी</option>
+          </select>
+        </div>
+        <h2>Welcome back</h2>
+        <p class="sub" id="loginIntro">Sign in to open your teacher dashboard.</p>
+        <div class="login-role-options">
+          <button type="button" class="login-role active" data-role="teacher">Teacher Login</button>
+          <button type="button" class="login-role" data-role="parent">Parent Login</button>
+        </div>
+        <label id="loginIdLabel" for="teacherId">Teacher ID</label>
+        <input type="text" id="teacherId" placeholder="e.g. TCH0001" autocomplete="username" required>
+        <label for="password">Password / PIN</label>
+        <input type="password" id="password" placeholder="Enter your password or PIN" autocomplete="current-password"
+          required>
+        <p id="loginError" class="login-error hidden" role="alert"></p>
+        <button type="submit" class="login-submit">Sign in securely →</button>
+        <div class="login-note"><strong>Demo mode:</strong> This frontend uses sample accounts and does not provide real
+          authentication. Do not enter a real password.</div>
+        <div class="demo-account-area">
+          <h3>Try a demo account</h3>
+          <div class="demo-account-row">
+            <div><strong>Priya Sharma · Class 5A</strong><small>Teacher demo · TCH0001 / 1234</small></div><button
+              type="button" data-demo="TCH0001" data-demo-role="teacher">Use demo →</button>
+          </div>
+          <div class="demo-account-row">
+            <div><strong>Aarav Patel's Parent</strong><small>Parent demo · PAR0001 / 1234</small></div><button
+              type="button" data-demo="PAR0001" data-demo-role="parent">Use demo →</button>
+          </div>
+          <div class="demo-account-row">
+            <div><strong>Janki's Parent</strong><small>Parent demo · PAR0005 / 1234</small></div><button type="button"
+              data-demo="PAR0005" data-demo-role="parent">Use demo →</button>
+          </div>
+          <div class="demo-account-row">
+            <div><strong>Zeel's Parent</strong><small>Parent demo · PAR0006 / 1234</small></div><button type="button"
+              data-demo="PAR0006" data-demo-role="parent">Use demo →</button>
+          </div>
+          <div class="demo-account-row">
+            <div><strong>Drashti's Parent</strong><small>Parent demo · PAR0007 / 1234</small></div><button type="button"
+              data-demo="PAR0007" data-demo-role="parent">Use demo →</button>
+          </div>
+          <p class="demo-extra">Second parent demo: <strong>PAR0002</strong> / <strong>1234</strong></p>
+        </div>
+        <p class="login-help">Need help? Contact your school administrator.</p>
+      </form>
+    </div>
+  </section>
+
+  <div id="app" class="app hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="brand"><span class="brand-icon"><img src="logo.png" width="50" alt="ShikshaSetu"
+            onerror="this.style.display='none'"></span><span>ShikshaSetu</span></div>
+      <div class="nav-label">Workspace</div>
+      <button type="button" class="nav-btn active" data-page="dashboard"><span class="ico">⌂</span>Dashboard</button>
+      <button type="button" class="nav-btn" data-page="classes"><span class="ico">▦</span>Student Record</button>
+      <button type="button" class="nav-btn" data-page="attendance"><span class="ico">✓</span>Attendance</button>
+      <button type="button" class="nav-btn" data-page="meals"><span class="ico">♨</span>Midday Meals</button>
+      <button type="button" class="nav-btn" data-page="reports"><span class="ico">▤</span>My Reports</button>
+      <div class="nav-label">Communication</div>
+      <button type="button" class="nav-btn" data-page="assistant"><span class="ico">✨</span>Smart Assistant</button>
+      <button type="button" class="nav-btn" data-page="chat"><span class="ico">☏</span>Chat</button>
+      <div class="nav-label">Account</div>
+      <button type="button" class="nav-btn teacher-identity-nav" data-page="profile" aria-label="Open teacher profile">
+        <span class="avatar teacher-nav-avatar" id="navTeacherAvatar">PS</span>
+        <span class="teacher-nav-details"><strong id="navTeacherName">Priya Sharma</strong><small
+            id="navTeacherId">TCH0001</small></span>
+      </button>
+      <div class="sidebar-bottom">
+        <button type="button" class="nav-btn" id="logoutBtn"><span class="ico">↪</span>Log out</button>
+        <div class="profile-mini hidden" id="sidebarProfileMini" aria-hidden="true">
+          <div class="avatar" id="sideAvatar">PS</div>
+          <div><strong id="sideName">Priya Sharma</strong><span id="sideRole">Teacher · TCH0001</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button type="button" class="icon-btn mobile-menu" id="menuBtn" aria-label="Open navigation">☰</button>
+          <div>
+            <h1 id="pageTitle">Dashboard</h1>
+            <p id="pageSubtitle">Your school day, organized.</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <label class="language-switcher app-language-switcher" for="languageSelectApp">
+            <span class="language-switcher-label">Language</span>
+            <select id="languageSelectApp" aria-label="Choose website language">
+              <option value="en">English</option>
+              <option value="gu">ગુજરાતી</option>
+              <option value="hi">हिंदी</option>
+            </select>
+          </label>
+          <span class="pill green" id="syncStatus">● Demo data</span>
+          <button type="button" class="icon-btn notification-trigger" id="notificationBtn" aria-label="Notifications"
+            title="View notifications">
+            <svg class="notification-bell" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z" />
+              <path d="M10 21a2 2 0 0 0 4 0" />
+              <path d="M4.2 4.8A10 10 0 0 0 2 11M19.8 4.8A10 10 0 0 1 22 11" />
+            </svg>
+            <span class="dot" aria-hidden="true"></span>
+          </button>
+          <div class="avatar" id="topAvatar">PS</div>
+        </div>
+      </header>
+      <div class="content" id="pageContent"></div>
+    </main>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
